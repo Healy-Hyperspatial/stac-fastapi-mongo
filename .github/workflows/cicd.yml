@@ -1,4 +1,6 @@
 name: stac-fastapi-mongo
+
+on:
   push:
     branches:
       - main
@@ -51,14 +53,12 @@ jobs:
         run: |
           pipenv run pytest -svvv
         env:
-          ENVIRONMENT: testing
           MONGO_HOST: 172.17.0.1
           BACKEND: mongo
           APP_HOST: 0.0.0.0
           APP_PORT: 8084
           ENVIRONMENT: testing
           MONGO_DB: stac
-          # MONGO_HOST: mongo
           MONGO_USER: root
           MONGO_PASS: example
           MONGO_PORT: 27017

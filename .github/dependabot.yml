@@ -9,6 +9,6 @@ updates:
     schedule:
       interval: daily
   - package-ecosystem: pip
-    directory: "/stac_fastapi/elasticsearch"
+    directory: "/stac_fastapi/mongo"
     schedule:
       interval: daily
