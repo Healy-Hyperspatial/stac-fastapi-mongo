@@ -8,7 +8,7 @@ with open("README.md") as f:
 install_requires = [
     "stac-fastapi.core==2.1.0",
     "motor==3.3.2",
-    "pymongo==4.6.1",
+    "pymongo==4.6.2",
     "uvicorn",
     "starlette",
 ]
