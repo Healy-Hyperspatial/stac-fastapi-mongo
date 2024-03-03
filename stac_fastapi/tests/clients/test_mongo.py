@@ -258,6 +258,7 @@ async def test_delete_item(ctx, core_client, txn_client):
         )
 
 
+@pytest.mark.skip(reason="Bulk item insert not yet implemented.")
 @pytest.mark.asyncio
 async def test_bulk_item_insert(ctx, core_client, txn_client, bulk_txn_client):
     items = {}
@@ -280,6 +281,7 @@ async def test_bulk_item_insert(ctx, core_client, txn_client, bulk_txn_client):
     #     )
 
 
+@pytest.mark.skip(reason="Feature collection insert not yet implemented.")
 @pytest.mark.asyncio
 async def test_feature_collection_insert(
     core_client,

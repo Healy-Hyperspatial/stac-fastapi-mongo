@@ -176,10 +176,8 @@ class DatabaseLogic:
         query: Dict[str, Any] = {}
         if token:
             last_seen_id = decode_token(token)
-            print(f"Decoded token (Last seen ID): {last_seen_id}")
             query = {"id": {"$gt": last_seen_id}}
 
-        print(f"Query: {query}, Limit: {limit}")
         cursor = collections_collection.find(query).sort("id", 1).limit(limit)
         collections = await cursor.to_list(length=limit)
 
@@ -194,9 +192,6 @@ class DatabaseLogic:
             for collection in collections
         ]
 
-        print(
-            f"Serialized Collections: {serialized_collections}, Next Token: {next_token}"
-        )
         return serialized_collections, next_token
 
     async def get_one_item(self, collection_id: str, item_id: str) -> Dict:
@@ -445,8 +440,6 @@ class DatabaseLogic:
                 pass  # Keep value as is if conversion is not possible
             mongo_op = op_mapping.get(cql2_filter["op"])
 
-            print("VALUE", type(value))
-
             if mongo_op is None:
                 raise ValueError(
                     f"Unsupported operation '{cql2_filter['op']}' in CQL2 filter."
@@ -564,11 +557,11 @@ class DatabaseLogic:
         if collection_ids:
             query["collection"] = {"$in": collection_ids}
 
-        sort_criteria = sort if sort else [("_id", 1)]  # Default sort
+        sort_criteria = sort if sort else [("id", 1)]  # Default sort
         try:
             if token:
-                last_id = ObjectId(base64.urlsafe_b64decode(token.encode()).decode())
-                query["_id"] = {"$gt": last_id}
+                last_id = decode_token(token)
+                query["id"] = {"$gt": last_id}
 
             cursor = collection.find(query).sort(sort_criteria).limit(limit + 1)
             items = await cursor.to_list(length=limit + 1)
