@@ -46,7 +46,7 @@ setup(
     ],
     url="https://github.com/Healy-Hyperspatial/stac-fastapi-mongo",
     license="MIT",
-    packages = find_namespace_packages(),
+    packages=find_namespace_packages(),
     zip_safe=False,
     install_requires=install_requires,
     extras_require=extra_reqs,
