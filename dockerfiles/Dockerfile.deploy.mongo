@@ -12,7 +12,7 @@ WORKDIR /app
 
 COPY . /app
 
-RUN pip install --no-cache-dir ./stac_fastapi/mongo[server]
+RUN pip install --no-cache-dir .[server]
 
 EXPOSE 8080
 

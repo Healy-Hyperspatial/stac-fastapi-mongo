@@ -18,7 +18,7 @@ pip install stac_fastapi.mongo
 To install the classes in your local Python env, run:
 
 ```shell
-pip install -e 'stac_fastapi/mongo[dev]'
+pip install -e .[dev]
 ```
 
 

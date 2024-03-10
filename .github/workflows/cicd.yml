@@ -47,7 +47,7 @@ jobs:
 
       - name: Install stac-fastapi-mongo
         run: |
-          pip install ./stac_fastapi/mongo[dev,server]
+          pip install .[dev,server]
 
       - name: Run test suite against Mongo
         run: |
