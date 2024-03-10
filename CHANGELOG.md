@@ -15,7 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 
-## [v2.0.0]
+## [v3.0.0]
 
 ### Added
 
@@ -24,5 +24,5 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 
-[Unreleased]: <https://github.com/stac-utils/stac-fastapi-elasticsearch/tree/v2.0.0...main>
-[v2.0.0]: <https://github.com/stac-utils/stac-fastapi-elasticsearch/tree/v2.0.0>
+[Unreleased]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/tree/v3.0.0...main>
+[v3.0.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/tree/v3.0.0>
