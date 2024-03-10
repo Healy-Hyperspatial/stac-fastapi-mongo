@@ -1,0 +1,2 @@
+prune stac_fastapi/tests
+prune data_loader

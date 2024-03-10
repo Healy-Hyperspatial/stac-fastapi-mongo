@@ -29,6 +29,7 @@ extra_reqs = {
 
 setup(
     name="stac-fastapi.mongo",
+    version="3.0.0",
     description="Mongodb stac-fastapi backend.",
     long_description=desc,
     long_description_content_type="text/markdown",
@@ -45,7 +46,7 @@ setup(
     ],
     url="https://github.com/Healy-Hyperspatial/stac-fastapi-mongo",
     license="MIT",
-    packages=find_namespace_packages(),
+    packages = find_namespace_packages(),
     zip_safe=False,
     install_requires=install_requires,
     extras_require=extra_reqs,
