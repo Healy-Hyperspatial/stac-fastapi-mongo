@@ -32,7 +32,7 @@ Prior to commit, run:
 pre-commit run --all-files
 ```
 
-## Build Elasticsearh API backend
+## Build stac-fastapi.mongo backend
 
 ```shell
 docker-compose up mongo
