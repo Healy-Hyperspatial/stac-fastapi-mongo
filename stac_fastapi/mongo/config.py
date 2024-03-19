@@ -72,5 +72,4 @@ class AsyncMongoDBSettings(ApiSettings):
     def create_client(self) -> AsyncIOMotorClient:
         """Create an asynchronous MongoDB client."""
         config = _mongodb_config()
-        print(config)
         return AsyncIOMotorClient(config["uri"])
