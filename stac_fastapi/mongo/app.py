@@ -2,8 +2,7 @@
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
-from stac_fastapi.core.core import (
-    BulkTransactionsClient,
+from stac_fastapi.core.core import (  # BulkTransactionsClient,
     CoreClient,
     EsAsyncBaseFiltersClient,
     TransactionsClient,
@@ -18,7 +17,8 @@ from stac_fastapi.extensions.core import (
     TokenPaginationExtension,
     TransactionExtension,
 )
-from stac_fastapi.extensions.third_party import BulkTransactionExtension
+
+# from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.mongo.config import AsyncMongoDBSettings
 from stac_fastapi.mongo.database_logic import (
     DatabaseLogic,
@@ -43,13 +43,13 @@ extensions = [
         ),
         settings=settings,
     ),
-    BulkTransactionExtension(
-        client=BulkTransactionsClient(
-            database=database_logic,
-            session=session,
-            settings=settings,
-        )
-    ),
+    # BulkTransactionExtension(
+    #     client=BulkTransactionsClient(
+    #         database=database_logic,
+    #         session=session,
+    #         settings=settings,
+    #     )
+    # ),
     FieldsExtension(),
     QueryExtension(),
     SortExtension(),
