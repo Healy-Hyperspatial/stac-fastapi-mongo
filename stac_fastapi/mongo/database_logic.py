@@ -6,8 +6,8 @@ import re
 from typing import Any, Dict, Iterable, List, Optional, Protocol, Tuple, Type, Union
 
 import attr
-from pymongo.errors import BulkWriteError, PyMongoError
 from bson import ObjectId
+from pymongo.errors import BulkWriteError, PyMongoError
 
 from stac_fastapi.core import serializers
 from stac_fastapi.core.extensions import filter
@@ -626,7 +626,7 @@ class DatabaseLogic:
         )
         if not collection_exists:
             raise NotFoundError(f"Collection {item['collection']} does not exist")
-        
+
         new_item = item.copy()
         new_item["_id"] = item.get("_id", ObjectId())
 
