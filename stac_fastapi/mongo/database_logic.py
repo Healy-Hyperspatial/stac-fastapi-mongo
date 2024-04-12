@@ -569,14 +569,13 @@ class DatabaseLogic:
             next_token = None
             if len(items) > limit:
                 next_token = base64.urlsafe_b64encode(
-                    str(items[-1]["_id"]).encode()
+                    str(items[-1]["id"]).encode()
                 ).decode()
                 items = items[:-1]
 
             maybe_count = None
             if not token:
                 maybe_count = await collection.count_documents(query)
-
             return items, maybe_count, next_token
         except PyMongoError as e:
             print(f"Database operation failed: {e}")
@@ -615,7 +614,7 @@ class DatabaseLogic:
             refresh (bool, optional): Not used for MongoDB, kept for compatibility with Elasticsearch interface.
 
         Raises:
-            ConflictError: If the item with the same ID already exists within the collection.
+            ConflictError: If the item with the same ID already exists within the collection
             NotFoundError: If the specified collection does not exist in MongoDB.
         """
         db = self.client[DATABASE]
@@ -628,14 +627,7 @@ class DatabaseLogic:
         if not collection_exists:
             raise NotFoundError(f"Collection {item['collection']} does not exist")
 
-        new_item = item.copy()
-        new_item["_id"] = item.get("_id", ObjectId())
-
-        existing_item = await items_collection.find_one({"_id": new_item["_id"]})
-        if existing_item:
-            raise ConflictError(f"Item with _id {item['_id']} already exists")
-
-        await items_collection.insert_one(new_item)
+        await items_collection.insert_one(item)
         item = serialize_doc(item)
 
     async def prep_create_item(
