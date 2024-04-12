@@ -6,7 +6,6 @@ import re
 from typing import Any, Dict, Iterable, List, Optional, Protocol, Tuple, Type, Union
 
 import attr
-from bson import ObjectId
 from pymongo.errors import BulkWriteError, PyMongoError
 
 from stac_fastapi.core import serializers
