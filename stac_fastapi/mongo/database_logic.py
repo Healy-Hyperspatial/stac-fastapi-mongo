@@ -7,6 +7,7 @@ from typing import Any, Dict, Iterable, List, Optional, Protocol, Tuple, Type, U
 
 import attr
 from pymongo.errors import BulkWriteError, PyMongoError
+from bson import ObjectId
 
 from stac_fastapi.core import serializers
 from stac_fastapi.core.extensions import filter
@@ -625,8 +626,16 @@ class DatabaseLogic:
         )
         if not collection_exists:
             raise NotFoundError(f"Collection {item['collection']} does not exist")
+        
+        new_item = item.copy()
+        new_item["_id"] = item.get("_id", ObjectId())
 
-        await items_collection.insert_one(item)
+        existing_item = await items_collection.find_one({"_id": new_item["_id"]})
+        if existing_item:
+            raise ConflictError(f"Item with _id {item['_id']} already exists")
+
+        await items_collection.insert_one(new_item)
+
         item = serialize_doc(item)
 
     async def prep_create_item(
@@ -819,6 +828,7 @@ class DatabaseLogic:
 
         Note:
             This function handles both updating a collection's metadata and changing its ID.
+            It does not directly modify the `_id` field, which is immutable in MongoDB.
             When changing a collection's ID, it creates a new document with the new ID and deletes the old document.
         """
         db = self.client[DATABASE]
@@ -850,10 +860,10 @@ class DatabaseLogic:
             await collections_collection.insert_one(collection)
             await collections_collection.delete_one({"id": collection_id})
         else:
-            # Update the existing collection with new data, ensuring not to attempt to update `id`
+            # Update the existing collection with new data, ensuring not to attempt to update `_id`
             await collections_collection.update_one(
                 {"id": collection_id},
-                {"$set": {k: v for k, v in collection.items() if k != "id"}},
+                {"$set": {k: v for k, v in collection.items() if k != "_id"}},
             )
 
     async def delete_collection(self, collection_id: str):
