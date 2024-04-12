@@ -820,7 +820,6 @@ class DatabaseLogic:
 
         Note:
             This function handles both updating a collection's metadata and changing its ID.
-            It does not directly modify the `_id` field, which is immutable in MongoDB.
             When changing a collection's ID, it creates a new document with the new ID and deletes the old document.
         """
         db = self.client[DATABASE]
@@ -852,10 +851,10 @@ class DatabaseLogic:
             await collections_collection.insert_one(collection)
             await collections_collection.delete_one({"id": collection_id})
         else:
-            # Update the existing collection with new data, ensuring not to attempt to update `_id`
+            # Update the existing collection with new data, ensuring not to attempt to update `id`
             await collections_collection.update_one(
                 {"id": collection_id},
-                {"$set": {k: v for k, v in collection.items() if k != "_id"}},
+                {"$set": {k: v for k, v in collection.items() if k != "id"}},
             )
 
     async def delete_collection(self, collection_id: str):
