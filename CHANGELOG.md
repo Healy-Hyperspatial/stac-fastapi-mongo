@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 ### Fixed
 
 - Removed bulk transactions extension from app.py
+- Fixed pagination bug so pagination functions
 
 
 ## [v3.0.0]

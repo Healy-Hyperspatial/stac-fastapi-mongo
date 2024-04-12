@@ -272,11 +272,14 @@ async def test_item_collection_filter_datetime(app_client, ctx):
 
 
 @pytest.mark.asyncio
-@pytest.mark.skip(reason="Pagination extension not implemented")
 async def test_pagination(app_client, load_test_data):
     """Test item collection pagination (paging extension)"""
     item_count = 10
     test_item = load_test_data("test_item.json")
+    test_collection = load_test_data("test_collection.json")
+
+    resp = await app_client.post("/collections", json=test_collection)
+    assert resp.status_code == 200
 
     for idx in range(item_count):
         _test_item = deepcopy(test_item)
