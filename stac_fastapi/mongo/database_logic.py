@@ -567,7 +567,12 @@ class DatabaseLogic:
             else:
                 skip_count = 0
 
-            cursor = collection.find(query).sort(sort_criteria).skip(skip_count).limit(limit + 1)
+            cursor = (
+                collection.find(query)
+                .sort(sort_criteria)
+                .skip(skip_count)
+                .limit(limit + 1)
+            )
             items = await cursor.to_list(length=limit + 1)
 
             next_token = None
