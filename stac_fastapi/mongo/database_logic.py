@@ -554,28 +554,32 @@ class DatabaseLogic:
         query = {"$and": search.filters} if search and search.filters else {}
 
         print("Query: ", query)
+
         if collection_ids:
             query["collection"] = {"$in": collection_ids}
 
         sort_criteria = sort if sort else [("id", 1)]  # Default sort
+
         try:
             if token:
                 last_id = decode_token(token)
-                query["id"] = {"$gt": last_id}
+                skip_count = int(last_id)
+            else:
+                skip_count = 0
 
-            cursor = collection.find(query).sort(sort_criteria).limit(limit + 1)
+            cursor = collection.find(query).sort(sort_criteria).skip(skip_count).limit(limit + 1)
             items = await cursor.to_list(length=limit + 1)
 
             next_token = None
             if len(items) > limit:
-                next_token = base64.urlsafe_b64encode(
-                    str(items[-1]["id"]).encode()
-                ).decode()
+                next_skip = skip_count + limit
+                next_token = base64.urlsafe_b64encode(str(next_skip).encode()).decode()
                 items = items[:-1]
 
             maybe_count = None
             if not token:
                 maybe_count = await collection.count_documents(query)
+
             return items, maybe_count, next_token
         except PyMongoError as e:
             print(f"Database operation failed: {e}")
