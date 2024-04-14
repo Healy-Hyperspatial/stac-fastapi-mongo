@@ -3,11 +3,11 @@
 import json
 import os
 import secrets
-from typing_extensions import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRoute
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from typing_extensions import Annotated
 
 from stac_fastapi.api.app import StacApi
 
