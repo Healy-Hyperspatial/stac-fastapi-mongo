@@ -26,6 +26,8 @@ from stac_fastapi.mongo.database_logic import (
     create_item_index,
 )
 
+from stac_fastapi.mongo.basic_auth import apply_basic_auth
+
 settings = AsyncMongoDBSettings()
 session = Session.create_from_settings(settings)
 
@@ -71,6 +73,7 @@ api = StacApi(
 )
 app = api.app
 
+apply_basic_auth(api)
 
 @app.on_event("startup")
 async def _startup_event() -> None:
