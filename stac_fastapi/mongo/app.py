@@ -17,6 +17,7 @@ from stac_fastapi.extensions.core import (
     TokenPaginationExtension,
     TransactionExtension,
 )
+from stac_fastapi.mongo.basic_auth import apply_basic_auth
 
 # from stac_fastapi.extensions.third_party import BulkTransactionExtension
 from stac_fastapi.mongo.config import AsyncMongoDBSettings
@@ -25,8 +26,6 @@ from stac_fastapi.mongo.database_logic import (
     create_collection_index,
     create_item_index,
 )
-
-from stac_fastapi.mongo.basic_auth import apply_basic_auth
 
 settings = AsyncMongoDBSettings()
 session = Session.create_from_settings(settings)
@@ -74,6 +73,7 @@ api = StacApi(
 app = api.app
 
 apply_basic_auth(api)
+
 
 @app.on_event("startup")
 async def _startup_event() -> None:

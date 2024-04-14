@@ -1,15 +1,32 @@
+"""Basic Authentication Module."""
+
+import json
+import os
 import secrets
 from typing import Annotated
-from fastapi import Depends, status, HTTPException
+
+from fastapi import Depends, HTTPException, status
 from fastapi.routing import APIRoute
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
+
 from stac_fastapi.api.app import StacApi
-import os
-import json
 
 security = HTTPBasic()
 
+
 def has_access(credentials: Annotated[HTTPBasicCredentials, Depends(security)]):
+    """Check if the provided credentials match the expected \
+        username and password stored in environment variables for basic authentication.
+
+    Args:
+        credentials (HTTPBasicCredentials): The HTTP basic authentication credentials.
+
+    Returns:
+        str: The username if authentication is successful.
+
+    Raises:
+        HTTPException: If authentication fails due to incorrect username or password.
+    """
     current_username_bytes = credentials.username.encode("utf8")
     correct_username_bytes = os.environ.get("BASIC_AUTH_USER").encode("utf8")
     is_correct_username = secrets.compare_digest(
@@ -28,7 +45,18 @@ def has_access(credentials: Annotated[HTTPBasicCredentials, Depends(security)]):
         )
     return credentials.username
 
+
 def apply_basic_auth(api: StacApi):
+    """Apply basic authentication to the provided FastAPI application \
+        based on environment variables for username, password, and endpoints.
+
+    Args:
+        api (StacApi): The FastAPI application.
+
+    Raises:
+        HTTPException: If there are issues with the configuration or format
+                       of the environment variables.
+    """
     if not os.environ.get("BASIC_AUTH_USER") or not os.environ.get("BASIC_AUTH_PASS"):
         return
 
@@ -41,14 +69,15 @@ def apply_basic_auth(api: StacApi):
                 methods = endpoint["method"]
                 if isinstance(methods, list):
                     for method in methods:
-                        parsed_endpoints.append({"path":endpoint.get("path"), "method":method})
+                        parsed_endpoints.append(
+                            {"path": endpoint.get("path"), "method": method}
+                        )
                 elif isinstance(methods, str):
-                    parsed_endpoints.append({"path":endpoint.get("path"), "method":methods})
-                
-            api.add_route_dependencies(
-                parsed_endpoints,
-                [Depends(has_access)]
-            )
+                    parsed_endpoints.append(
+                        {"path": endpoint.get("path"), "method": methods}
+                    )
+
+            api.add_route_dependencies(parsed_endpoints, [Depends(has_access)])
         except (json.JSONDecodeError, KeyError):
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -60,6 +89,5 @@ def apply_basic_auth(api: StacApi):
             if isinstance(route, APIRoute):
                 for method in route.methods:
                     api.add_route_dependencies(
-                        [{"path": route.path, "method": method}],
-                        [Depends(has_access)]
+                        [{"path": route.path, "method": method}], [Depends(has_access)]
                     )
