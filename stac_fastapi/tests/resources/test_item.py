@@ -556,99 +556,123 @@ async def test_get_missing_item_collection(app_client):
 @pytest.mark.asyncio
 async def test_pagination_item_collection(app_client, ctx, txn_client):
     """Test item collection pagination links (paging extension)"""
-    ids = [ctx.item["id"]]
+    # Initialize a list to store the expected item IDs
+    expected_item_ids = [ctx.item["id"]]
 
-    # Ingest 5 items
+    # Ingest 5 items in addition to the default test-item
     for _ in range(5):
         ctx.item["id"] = str(uuid.uuid4())
         await create_item(txn_client, item=ctx.item)
-        ids.append(ctx.item["id"])
+        expected_item_ids.append(ctx.item["id"])
 
-    # Paginate through all 6 items with a limit of 1 (expecting 7 requests)
+    # Paginate through all items with a limit of 1 (expecting 6 requests)
     page = await app_client.get(
         f"/collections/{ctx.item['collection']}/items", params={"limit": 1}
     )
 
-    item_ids = []
-    idx = 0
+    # Initialize a list to store the retrieved item IDs
+    retrieved_item_ids = []
+    request_count = 0
     for _ in range(100):
-        idx += 1
+        request_count += 1
         page_data = page.json()
         next_link = list(filter(lambda link: link["rel"] == "next", page_data["links"]))
         if not next_link:
+            # Ensure that the last page contains features
             assert page_data["features"]
             break
 
+        # Assert that each page contains only one feature
         assert len(page_data["features"]) == 1
-        item_ids.append(page_data["features"][0]["id"])
+        retrieved_item_ids.append(page_data["features"][0]["id"])
 
+        # Extract the next page URL
         href = next_link[0]["href"][len("http://test-server") :]
         page = await app_client.get(href)
 
-    assert idx == len(ids)
+    # Assert that the number of requests made is equal to the total number of items ingested
+    assert request_count == len(expected_item_ids)
 
-    # Confirm we have paginated through all items
-    assert not set(item_ids) - set(ids)
+    # Confirm we have paginated through all items by comparing the expected and retrieved item IDs
+    assert not set(retrieved_item_ids) - set(expected_item_ids)
 
 
 @pytest.mark.asyncio
 async def test_pagination_post(app_client, ctx, txn_client):
     """Test POST pagination (paging extension)"""
-    ids = [ctx.item["id"]]
+    # Initialize a list to store the expected item IDs
+    expected_item_ids = [ctx.item["id"]]
 
-    # Ingest 5 items
+    # Ingest 5 items in addition to the default test-item
     for _ in range(5):
         ctx.item["id"] = str(uuid.uuid4())
         await create_item(txn_client, ctx.item)
-        ids.append(ctx.item["id"])
+        expected_item_ids.append(ctx.item["id"])
 
-    # Paginate through all 5 items with a limit of 1 (expecting 5 requests)
-    request_body = {"ids": ids, "limit": 1}
+    # Prepare the initial request body with item IDs and a limit of 1
+    request_body = {"ids": expected_item_ids, "limit": 1}
+
+    # Perform the initial POST request to start pagination
     page = await app_client.post("/search", json=request_body)
-    idx = 1  # start at 1 because of conftest.py > ctx adds test_item by default
-    item_ids = []
+
+    # Initialize variables to keep track of request count and retrieved item IDs
+    request_count = (
+        1  # Start at 1 because of conftest.py > ctx adds test_item by default
+    )
+    retrieved_item_ids = []
+
     for _ in range(100):
-        idx += 1
+        request_count += 1
         page_data = page.json()
+
+        # Extract the next link from the page data
         next_link = list(filter(lambda link: link["rel"] == "next", page_data["links"]))
+
+        # If there is no next link, exit the loop
         if not next_link:
             break
 
-        item_ids.append(page_data["features"][0]["id"])
+        # Retrieve the ID of the first item on the current page and add it to the list
+        retrieved_item_ids.append(page_data["features"][0]["id"])
 
-        # Merge request bodies
+        # Update the request body with the parameters from the next link
         request_body.update(next_link[0]["body"])
+
+        # Perform the next POST request using the updated request body
         page = await app_client.post("/search", json=request_body)
 
-    # Our limit is 1, so we expect len(ids) number of requests before we run out of pages
-    assert idx == len(ids) + 1
+    # Our limit is 1, so we expect len(ids) + 1 number of requests before we run out of pages
+    assert request_count == len(expected_item_ids) + 1
 
-    # Confirm we have paginated through all items
-    assert not set(item_ids) - set(ids)
+    # Confirm we have paginated through all items by comparing the expected and retrieved item IDs
+    assert not set(retrieved_item_ids) - set(expected_item_ids)
 
 
 @pytest.mark.asyncio
 async def test_pagination_token_idempotent(app_client, ctx, txn_client):
     """Test that pagination tokens are idempotent (paging extension)"""
-    ids = [ctx.item["id"]]
+    # Initialize a list to store the expected item IDs
+    expected_item_ids = [ctx.item["id"]]
 
-    # Ingest 5 items
+    # Ingest 5 items in addition to the default test-item
     for _ in range(5):
         ctx.item["id"] = str(uuid.uuid4())
         await create_item(txn_client, ctx.item)
-        ids.append(ctx.item["id"])
+        expected_item_ids.append(ctx.item["id"])
 
-    page = await app_client.get("/search", params={"ids": ",".join(ids), "limit": 3})
+    # Perform the initial GET request to start pagination with a limit of 3
+    page = await app_client.get(
+        "/search", params={"ids": ",".join(expected_item_ids), "limit": 3}
+    )
     page_data = page.json()
     next_link = list(filter(lambda link: link["rel"] == "next", page_data["links"]))
 
+    # Extract the pagination token from the next link
+    pagination_token = parse_qs(urlparse(next_link[0]["href"]).query)
+
     # Confirm token is idempotent
-    resp1 = await app_client.get(
-        "/search", params=parse_qs(urlparse(next_link[0]["href"]).query)
-    )
-    resp2 = await app_client.get(
-        "/search", params=parse_qs(urlparse(next_link[0]["href"]).query)
-    )
+    resp1 = await app_client.get("/search", params=pagination_token)
+    resp2 = await app_client.get("/search", params=pagination_token)
     resp1_data = resp1.json()
     resp2_data = resp2.json()
 
