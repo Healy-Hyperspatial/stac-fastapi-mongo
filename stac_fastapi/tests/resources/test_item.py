@@ -616,9 +616,7 @@ async def test_pagination_post(app_client, ctx, txn_client):
     page = await app_client.post("/search", json=request_body)
 
     # Initialize variables to keep track of request count and retrieved item IDs
-    request_count = (
-        1  # Start at 1 because of conftest.py > ctx adds test_item by default
-    )
+    request_count = 1
     retrieved_item_ids = []
 
     for _ in range(100):
