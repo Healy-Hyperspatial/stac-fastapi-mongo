@@ -570,7 +570,6 @@ async def test_pagination_item_collection(app_client, ctx, txn_client):
         f"/collections/{ctx.item['collection']}/items", params={"limit": 1}
     )
 
-    # Initialize a list to store the retrieved item IDs
     retrieved_item_ids = []
     request_count = 0
     for _ in range(100):
@@ -615,10 +614,8 @@ async def test_pagination_post(app_client, ctx, txn_client):
     # Perform the initial POST request to start pagination
     page = await app_client.post("/search", json=request_body)
 
-    # Initialize variables to keep track of request count and retrieved item IDs
-    request_count = 1
     retrieved_item_ids = []
-
+    request_count = 0
     for _ in range(100):
         request_count += 1
         page_data = page.json()
@@ -640,7 +637,7 @@ async def test_pagination_post(app_client, ctx, txn_client):
         page = await app_client.post("/search", json=request_body)
 
     # Our limit is 1, so we expect len(ids) + 1 number of requests before we run out of pages
-    assert request_count == len(expected_item_ids) + 1
+    assert request_count == len(expected_item_ids)
 
     # Confirm we have paginated through all items by comparing the expected and retrieved item IDs
     assert not set(retrieved_item_ids) - set(expected_item_ids)
