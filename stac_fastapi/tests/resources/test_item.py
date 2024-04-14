@@ -570,8 +570,9 @@ async def test_pagination_item_collection(app_client, ctx, txn_client):
     )
 
     item_ids = []
-    idx = 1 # start at 1 because of conftest.py > ctx adds test_item by default
-    for idx in range(100):
+    idx = 0
+    for _ in range(100):
+        idx += 1
         page_data = page.json()
         next_link = list(filter(lambda link: link["rel"] == "next", page_data["links"]))
         if not next_link:
@@ -604,7 +605,7 @@ async def test_pagination_post(app_client, ctx, txn_client):
     # Paginate through all 5 items with a limit of 1 (expecting 5 requests)
     request_body = {"ids": ids, "limit": 1}
     page = await app_client.post("/search", json=request_body)
-    idx = 1 # start at 1 because of conftest.py > ctx adds test_item by default
+    idx = 1  # start at 1 because of conftest.py > ctx adds test_item by default
     item_ids = []
     for _ in range(100):
         idx += 1
