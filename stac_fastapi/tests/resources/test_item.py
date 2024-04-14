@@ -636,7 +636,7 @@ async def test_pagination_post(app_client, ctx, txn_client):
         # Perform the next POST request using the updated request body
         page = await app_client.post("/search", json=request_body)
 
-    # Our limit is 1, so we expect len(ids) + 1 number of requests before we run out of pages
+    # Our limit is 1, so we expect len(expected_item_ids) number of requests before we run out of pages
     assert request_count == len(expected_item_ids)
 
     # Confirm we have paginated through all items by comparing the expected and retrieved item IDs
