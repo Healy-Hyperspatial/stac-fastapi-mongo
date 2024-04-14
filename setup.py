@@ -11,6 +11,7 @@ install_requires = [
     "pymongo==4.6.2",
     "uvicorn",
     "starlette",
+    "typing_extensions==4.4.0",
 ]
 
 extra_reqs = {
