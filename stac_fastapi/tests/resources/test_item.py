@@ -570,7 +570,7 @@ async def test_pagination_item_collection(app_client, ctx, txn_client):
     )
 
     item_ids = []
-    idx = 1  # start at 1 because of conftest.py > ctx adds test_item by default
+    idx = 0
     for _ in range(100):
         idx += 1
         page_data = page.json()
