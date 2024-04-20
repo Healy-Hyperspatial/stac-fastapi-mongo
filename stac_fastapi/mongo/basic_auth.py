@@ -2,9 +2,9 @@
 
 import json
 import os
-import secrets
+from typing import Any, Dict
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.routing import APIRoute
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from typing_extensions import Annotated
@@ -13,12 +13,17 @@ from stac_fastapi.api.app import StacApi
 
 security = HTTPBasic()
 
+_BASIC_AUTH: Dict[str, Any] = {}
 
-def has_access(credentials: Annotated[HTTPBasicCredentials, Depends(security)]):
+
+def has_access(
+    request: Request, credentials: Annotated[HTTPBasicCredentials, Depends(security)]
+):
     """Check if the provided credentials match the expected \
         username and password stored in environment variables for basic authentication.
 
     Args:
+        request (Request): The FastAPI request object.
         credentials (HTTPBasicCredentials): The HTTP basic authentication credentials.
 
     Returns:
@@ -27,23 +32,34 @@ def has_access(credentials: Annotated[HTTPBasicCredentials, Depends(security)]):
     Raises:
         HTTPException: If authentication fails due to incorrect username or password.
     """
-    current_username_bytes = credentials.username.encode("utf8")
-    correct_username_bytes = os.environ.get("BASIC_AUTH_USER").encode("utf8")
-    is_correct_username = secrets.compare_digest(
-        current_username_bytes, correct_username_bytes
+    global _BASIC_AUTH
+
+    users = _BASIC_AUTH.get("users")
+    user: Dict[str, Any] = next(
+        (u for u in users if u.get("username") == credentials.username), {}
     )
-    current_password_bytes = credentials.password.encode("utf8")
-    correct_password_bytes = os.environ.get("BASIC_AUTH_PASS").encode("utf8")
-    is_correct_password = secrets.compare_digest(
-        current_password_bytes, correct_password_bytes
-    )
-    if not (is_correct_username and is_correct_password):
+
+    if not user or not credentials.password == user.get("password"):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Basic"},
         )
-    return credentials.username
+
+    permissions = user.get("permissions", [])
+    path = request.url.path
+    method = request.method
+
+    if permissions == "*":
+        return credentials.username
+    for permission in permissions:
+        if permission["path"] == path and method in permission["method"]:
+            return credentials.username
+
+    raise HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=f"Insufficient permissions [{path}]",
+    )
 
 
 def apply_basic_auth(api: StacApi):
@@ -57,37 +73,31 @@ def apply_basic_auth(api: StacApi):
         HTTPException: If there are issues with the configuration or format
                        of the environment variables.
     """
-    if not os.environ.get("BASIC_AUTH_USER") or not os.environ.get("BASIC_AUTH_PASS"):
+    global _BASIC_AUTH
+
+    basic_auth_json_str = os.environ.get("BASIC_AUTH")
+    if not basic_auth_json_str:
+        print("Basic authentication disabled.")
         return
 
-    endpoints_json_str = os.environ.get("BASIC_AUTH_ENDPOINTS")
-    if endpoints_json_str:
-        try:
-            endpoints = json.loads(os.environ.get("BASIC_AUTH_ENDPOINTS"))
-            parsed_endpoints = []
-            for endpoint in endpoints:
-                methods = endpoint["method"]
-                if isinstance(methods, list):
-                    for method in methods:
-                        parsed_endpoints.append(
-                            {"path": endpoint.get("path"), "method": method}
-                        )
-                elif isinstance(methods, str):
-                    parsed_endpoints.append(
-                        {"path": endpoint.get("path"), "method": methods}
-                    )
+    try:
+        _BASIC_AUTH = json.loads(basic_auth_json_str)
+    except json.JSONDecodeError as exception:
+        print(f"Invalid JSON format for BASIC_AUTH. {exception=}")
+        raise
+    public_endpoints = _BASIC_AUTH.get("public_endpoints", [])
+    users = _BASIC_AUTH.get("users")
+    if not users:
+        raise Exception("Invalid JSON format for BASIC_AUTH. Key 'users' undefined.")
 
-            api.add_route_dependencies(parsed_endpoints, [Depends(has_access)])
-        except (json.JSONDecodeError, KeyError):
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Invalid JSON format for user credentials",
-            )
-    else:
-        app = api.app
-        for route in app.routes:
-            if isinstance(route, APIRoute):
-                for method in route.methods:
-                    api.add_route_dependencies(
-                        [{"path": route.path, "method": method}], [Depends(has_access)]
-                    )
+    app = api.app
+    for route in app.routes:
+        if isinstance(route, APIRoute):
+            for method in route.methods:
+                if {"path": route.path, "method": method} in public_endpoints:
+                    continue
+                api.add_route_dependencies(
+                    [{"path": route.path, "method": method}], [Depends(has_access)]
+                )
+
+    print("Basic authentication enabled.")
