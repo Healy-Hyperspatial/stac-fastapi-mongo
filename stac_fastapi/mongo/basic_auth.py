@@ -109,8 +109,6 @@ def apply_basic_auth(api: StacApi) -> None:
             for method in route.methods:
                 endpoint = {"path": route.path, "method": method}
                 if endpoint not in public_endpoints:
-                    api.add_route_dependencies(
-                        [endpoint], [Depends(has_access)]
-                    )
+                    api.add_route_dependencies([endpoint], [Depends(has_access)])
 
     print("Basic authentication enabled.")
