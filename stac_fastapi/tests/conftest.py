@@ -16,6 +16,7 @@ from stac_fastapi.core.core import (
     TransactionsClient,
 )
 from stac_fastapi.core.extensions import QueryExtension
+from stac_fastapi.mongo.basic_auth import apply_basic_auth
 
 if os.getenv("BACKEND", "elasticsearch").lower() == "opensearch":
     from stac_fastapi.opensearch.config import AsyncOpensearchSettings as AsyncSettings
@@ -222,4 +223,50 @@ async def app_client(app):
     await create_collection_index()
 
     async with AsyncClient(app=app, base_url="http://test-server") as c:
+        yield c
+
+
+@pytest_asyncio.fixture(scope="session")
+async def app_auth():
+    settings = AsyncSettings()
+    extensions = [
+        TransactionExtension(
+            client=TransactionsClient(
+                database=database, session=None, settings=settings
+            ),
+            settings=settings,
+        ),
+        ContextExtension(),
+        SortExtension(),
+        FieldsExtension(),
+        QueryExtension(),
+        TokenPaginationExtension(),
+        FilterExtension(),
+    ]
+
+    post_request_model = create_post_request_model(extensions)
+
+    stac_api = StacApi(
+        settings=settings,
+        client=CoreClient(
+            database=database,
+            session=None,
+            extensions=extensions,
+            post_request_model=post_request_model,
+        ),
+        extensions=extensions,
+        search_get_request_model=create_get_request_model(extensions),
+        search_post_request_model=post_request_model,
+    )
+
+    apply_basic_auth(stac_api)
+
+    return stac_api.app
+
+
+@pytest_asyncio.fixture(scope="session")
+async def app_client_basic_auth(app_auth):
+    await create_collection_index()
+
+    async with AsyncClient(app=app_auth, base_url="http://test-server") as c:
         yield c
