@@ -101,7 +101,7 @@ def has_access(
 
     raise HTTPException(
         status_code=status.HTTP_403_FORBIDDEN,
-        detail=f"Insufficient permissions [{path}]",
+        detail=f"Insufficient permissions for [{method} {path}]",
     )
 
 
