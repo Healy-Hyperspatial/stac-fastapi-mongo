@@ -1,6 +1,5 @@
 """Basic Authentication Module."""
 
-import hmac
 import json
 import os
 import secrets
@@ -16,30 +15,6 @@ from stac_fastapi.api.app import StacApi
 security = HTTPBasic()
 
 _BASIC_AUTH: Dict[str, Any] = {}
-
-
-def constant_time_compare(actual: bytes, expected: bytes) -> bool:
-    """
-    Compare two byte strings in constant time to avoid timing attacks.
-
-    This function compares two byte strings byte by byte in a way that
-    always takes the same amount of time, regardless of the content of the strings.
-    This mitigates timing attacks, where an attacker could infer information
-    about the strings being compared based on the time it takes to perform the comparison.
-
-    Args:
-        actual (bytes): The first byte string to compare.
-        expected (bytes): The second byte string to compare.
-
-    Returns:
-        bool: True if the byte strings are equal, False otherwise.
-    """
-    if len(actual) != len(expected):
-        return False
-    result = 0
-    for x, y in zip(actual, expected):
-        result |= x ^ y
-    return result == 0
 
 
 def has_access(
@@ -72,17 +47,12 @@ def has_access(
             headers={"WWW-Authenticate": "Basic"},
         )
 
-    # Generate a constant-time comparison HMAC digest of the password
-    secret_key = secrets.token_bytes(32)
-    expected_digest = hmac.new(
-        secret_key, credentials.password.encode("utf-8"), "sha256"
-    ).digest()
-    actual_digest = hmac.new(
-        secret_key, user.get("password", "").encode("utf-8"), "sha256"
-    ).digest()
-
-    # Compare the digests in constant time
-    if not constant_time_compare(actual_digest, expected_digest):
+    # Compare the provided username and password with the correct ones using compare_digest
+    if not secrets.compare_digest(
+        credentials.username.encode("utf-8"), user.get("username").encode("utf-8")
+    ) or not secrets.compare_digest(
+        credentials.password.encode("utf-8"), user.get("password").encode("utf-8")
+    ):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
