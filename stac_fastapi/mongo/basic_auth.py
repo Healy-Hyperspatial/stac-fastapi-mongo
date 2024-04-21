@@ -1,6 +1,8 @@
+"""Basic Authentication Module."""
+
+import hmac
 import json
 import os
-import hmac
 import secrets
 from typing import Any, Dict
 
@@ -72,8 +74,12 @@ def has_access(
 
     # Generate a constant-time comparison HMAC digest of the password
     secret_key = secrets.token_bytes(32)
-    expected_digest = hmac.new(secret_key, credentials.password.encode('utf-8'), 'sha256').digest()
-    actual_digest = hmac.new(secret_key, user.get("password", "").encode('utf-8'), 'sha256').digest()
+    expected_digest = hmac.new(
+        secret_key, credentials.password.encode("utf-8"), "sha256"
+    ).digest()
+    actual_digest = hmac.new(
+        secret_key, user.get("password", "").encode("utf-8"), "sha256"
+    ).digest()
 
     # Compare the digests in constant time
     if not constant_time_compare(actual_digest, expected_digest):
