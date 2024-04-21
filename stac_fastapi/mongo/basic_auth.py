@@ -1,7 +1,7 @@
-"""Basic Authentication Module."""
-
 import json
 import os
+import hmac
+import secrets
 from typing import Any, Dict
 
 from fastapi import Depends, HTTPException, Request, status
@@ -16,9 +16,33 @@ security = HTTPBasic()
 _BASIC_AUTH: Dict[str, Any] = {}
 
 
+def constant_time_compare(actual: bytes, expected: bytes) -> bool:
+    """
+    Compare two byte strings in constant time to avoid timing attacks.
+
+    This function compares two byte strings byte by byte in a way that
+    always takes the same amount of time, regardless of the content of the strings.
+    This mitigates timing attacks, where an attacker could infer information
+    about the strings being compared based on the time it takes to perform the comparison.
+
+    Args:
+        actual (bytes): The first byte string to compare.
+        expected (bytes): The second byte string to compare.
+
+    Returns:
+        bool: True if the byte strings are equal, False otherwise.
+    """
+    if len(actual) != len(expected):
+        return False
+    result = 0
+    for x, y in zip(actual, expected):
+        result |= x ^ y
+    return result == 0
+
+
 def has_access(
     request: Request, credentials: Annotated[HTTPBasicCredentials, Depends(security)]
-):
+) -> str:
     """Check if the provided credentials match the expected \
         username and password stored in environment variables for basic authentication.
 
@@ -39,7 +63,20 @@ def has_access(
         (u for u in users if u.get("username") == credentials.username), {}
     )
 
-    if not user or not credentials.password == user.get("password"):
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+
+    # Generate a constant-time comparison HMAC digest of the password
+    secret_key = secrets.token_bytes(32)
+    expected_digest = hmac.new(secret_key, credentials.password.encode('utf-8'), 'sha256').digest()
+    actual_digest = hmac.new(secret_key, user.get("password", "").encode('utf-8'), 'sha256').digest()
+
+    # Compare the digests in constant time
+    if not constant_time_compare(actual_digest, expected_digest):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
@@ -53,7 +90,7 @@ def has_access(
     if permissions == "*":
         return credentials.username
     for permission in permissions:
-        if permission["path"] == path and method in permission["method"]:
+        if permission["path"] == path and method in permission.get("method", []):
             return credentials.username
 
     raise HTTPException(
@@ -62,7 +99,7 @@ def has_access(
     )
 
 
-def apply_basic_auth(api: StacApi):
+def apply_basic_auth(api: StacApi) -> None:
     """Apply basic authentication to the provided FastAPI application \
         based on environment variables for username, password, and endpoints.
 
