@@ -63,7 +63,7 @@ jobs:
           MONGO_PASS: example
           MONGO_PORT: 27017
 
-        - name: Run test suite against Mongo w/ Basic Auth
+      - name: Run test suite against Mongo w/ Basic Auth
         run: |
           pipenv run pytest -k "basic_auth" -svvv
         env:
