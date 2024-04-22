@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 - Removed bulk transactions extension from app.py
 - Fixed pagination issue with MongoDB. Fixes [#1](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/1)
+- Added option to include Basic Auth. [#12](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/12)
 
 
 ## [v3.0.0]
