@@ -5,7 +5,7 @@ import pytest
 
 @pytest.mark.asyncio
 async def test_get_search_not_authenticated(app_client_basic_auth):
-    """Test public endpoint search without auhtentication"""
+    """Test public endpoint search without authentication"""
     params = {"query": '{"gsd": {"gt": 14}}'}
 
     response = await app_client_basic_auth.get("/search", params=params)
