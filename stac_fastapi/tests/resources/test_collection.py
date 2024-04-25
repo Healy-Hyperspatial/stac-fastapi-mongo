@@ -54,8 +54,7 @@ async def test_delete_missing_collection(app_client):
 async def test_update_collection_already_exists(ctx, app_client):
     """Test updating a collection which already exists"""
     ctx.collection["keywords"].append("test")
-    collection_id = ctx.collection["id"]
-    resp = await app_client.put(f"/collections/{collection_id}", json=ctx.collection)
+    resp = await app_client.put(f"/collections/{ctx.collection['id']}", json=ctx.collection)
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{ctx.collection['id']}")
@@ -70,8 +69,7 @@ async def test_update_new_collection(app_client, load_test_data):
     test_collection = load_test_data("test_collection.json")
     test_collection["id"] = "new-test-collection"
 
-    collection_id = test_collection["id"]
-    resp = await app_client.put(f"/collections/{collection_id}", json=test_collection)
+    resp = await app_client.put(f"/collections/{test_collection['id']}", json=test_collection)
     assert resp.status_code == 404
 
 
