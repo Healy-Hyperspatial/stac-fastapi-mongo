@@ -85,7 +85,7 @@ async def test_collection_not_found(app_client):
 @pytest.mark.asyncio
 async def test_returns_valid_collection(ctx, app_client):
     """Test validates fetched collection with jsonschema"""
-    resp = await app_client.put("/collections", json=ctx.collection)
+    resp = await app_client.put(f"/collections/{ctx.collection['id']}", json=ctx.collection)
     assert resp.status_code == 200
 
     resp = await app_client.get(f"/collections/{ctx.collection['id']}")
