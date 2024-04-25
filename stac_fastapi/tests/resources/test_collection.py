@@ -110,7 +110,7 @@ async def test_collection_extensions(ctx, app_client):
     )
     test_asset = {"title": "test", "description": "test", "type": "test"}
     ctx.collection["item_assets"] = {"test": test_asset}
-    resp = await app_client.put("/collections", json=ctx.collection)
+    resp = await app_client.put(f"/collections/{ctx.collection['id']}", json=ctx.collection)
 
     assert resp.status_code == 200
     assert resp.json().get("item_assets", {}).get("test") == test_asset
