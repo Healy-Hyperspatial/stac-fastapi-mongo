@@ -45,11 +45,9 @@ def parse_datestring(str):
     return parsed_value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
 
 
-def convert_datetime(obj):
-    """
-    Recursively converts date strings in ISO 8601 format with timezone offsets into \
-    date strings with 'Z' timezone indicator. The input can be either a dictionary or a list, \
-    possibly nested, containing date strings.
+def convert_obj_datetimes(obj):
+    """Recursively explores dictionaries and lists, attempting to parse strings as datestrings \
+    into a specific format.
 
     Args:
         obj (dict or list): The dictionary or list containing date strings to convert.
@@ -60,7 +58,7 @@ def convert_datetime(obj):
     if isinstance(obj, dict):
         for key, value in obj.items():
             if isinstance(value, dict) or isinstance(value, list):
-                obj[key] = convert_datetime(value)
+                obj[key] = convert_obj_datetimes(value)
             elif isinstance(value, str):
                 try:
                     obj[key] = parse_datestring(value)
@@ -76,5 +74,5 @@ def convert_datetime(obj):
                 except ValueError:
                     pass  # If parsing fails, retain the original value
             elif isinstance(value, list):
-                obj[i] = convert_datetime(value)  # Recursively handle nested lists
+                obj[i] = convert_obj_datetimes(value)  # Recursively handle nested lists
     return obj

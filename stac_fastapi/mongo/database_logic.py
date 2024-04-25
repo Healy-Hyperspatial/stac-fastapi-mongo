@@ -16,7 +16,7 @@ from stac_fastapi.extensions.core import SortExtension
 from stac_fastapi.mongo.config import AsyncMongoDBSettings as AsyncSearchSettings
 from stac_fastapi.mongo.config import MongoDBSettings as SyncSearchSettings
 from stac_fastapi.mongo.utilities import (
-    convert_datetime,
+    convert_obj_datetimes,
     decode_token,
     encode_token,
     parse_datestring,
@@ -654,7 +654,7 @@ class DatabaseLogic:
 
         new_item = item.copy()
         new_item["_id"] = item.get("_id", ObjectId())
-        convert_datetime(new_item)
+        convert_obj_datetimes(new_item)
 
         existing_item = await items_collection.find_one({"_id": new_item["_id"]})
         if existing_item:
