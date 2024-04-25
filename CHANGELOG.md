@@ -13,7 +13,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ### Changed
 
-- Upgraded stac-fastapi.core to 2.2.0 [#15](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/15)
+- Upgraded stac-fastapi.core to 2.3.0 [#15](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/15)
+- Enforced `%Y-%m-%dT%H:%M:%S.%fZ` datetime format on create_item [#15](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/15)
+- Queries now convert datetimes to `%Y-%m-%dT%H:%M:%S.%fZ` datetime format [#15](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/15)
 
 ### Fixed
 
