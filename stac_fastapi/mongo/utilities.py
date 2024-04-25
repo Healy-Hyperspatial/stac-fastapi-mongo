@@ -3,6 +3,7 @@
 from base64 import urlsafe_b64decode, urlsafe_b64encode
 
 from bson import ObjectId
+from dateutil import parser  # type: ignore
 
 
 def serialize_doc(doc):
@@ -28,3 +29,40 @@ def encode_token(token_value: str) -> str:
     """Encode a token value (e.g., a UUID or cursor) as a base64 string."""
     encoded_token = urlsafe_b64encode(token_value.encode()).decode()
     return encoded_token
+
+
+def convert_datetime(obj):
+    """
+    Recursively converts date strings in ISO 8601 format with timezone offsets into \
+    date strings with 'Z' timezone indicator. The input can be either a dictionary or a list, \
+    possibly nested, containing date strings.
+
+    Args:
+        obj (dict or list): The dictionary or list containing date strings to convert.
+
+    Returns:
+        dict or list: The converted dictionary or list with date strings in the desired format.
+    """
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if isinstance(value, dict) or isinstance(value, list):
+                obj[key] = convert_datetime(value)
+            elif isinstance(value, str):
+                try:
+                    parsed_value = parser.parse(value)
+                    obj[key] = parsed_value.strftime("%Y-%m-%dT%H:%M:%SZ")
+                except ValueError:
+                    pass  # If parsing fails, retain the original value
+            elif value is None:
+                obj[key] = None  # Handle null values
+    elif isinstance(obj, list):
+        for i, value in enumerate(obj):
+            if isinstance(value, str):  # Only attempt to parse strings
+                try:
+                    parsed_value = parser.parse(value)
+                    obj[i] = parsed_value
+                except ValueError:
+                    pass  # If parsing fails, retain the original value
+            elif isinstance(value, list):
+                obj[i] = convert_datetime(value)  # Recursively handle nested lists
+    return obj
