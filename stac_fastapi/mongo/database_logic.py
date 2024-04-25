@@ -19,6 +19,7 @@ from stac_fastapi.mongo.utilities import (
     convert_datetime,
     decode_token,
     encode_token,
+    parse_datestring,
     serialize_doc,
 )
 from stac_fastapi.types.errors import ConflictError, NotFoundError
@@ -257,14 +258,14 @@ class DatabaseLogic:
         """
         if "eq" in datetime_search:
             search.add_filter(
-                {"properties.datetime": datetime_search["eq"].replace("+00:00", "Z")}
+                {"properties.datetime": parse_datestring(datetime_search["eq"])}
             )
         else:
             if "gte" in datetime_search and datetime_search["gte"]:
                 search.add_filter(
                     {
                         "properties.datetime": {
-                            "$gte": datetime_search["gte"].replace("+00:00", "Z")
+                            "$gte": parse_datestring(datetime_search["gte"])
                         }
                     }
                 )
@@ -272,7 +273,7 @@ class DatabaseLogic:
                 search.add_filter(
                     {
                         "properties.datetime": {
-                            "$lte": datetime_search["lte"].replace("+00:00", "Z")
+                            "$lte": parse_datestring(datetime_search["lte"])
                         }
                     }
                 )

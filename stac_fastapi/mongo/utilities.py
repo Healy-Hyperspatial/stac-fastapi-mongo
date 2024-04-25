@@ -31,6 +31,20 @@ def encode_token(token_value: str) -> str:
     return encoded_token
 
 
+def parse_datestring(str):
+    """Parse date string using dateutil.parser.parse() and returns a string formatted \
+    as ISO 8601 with milliseconds and 'Z' timezone indicator.
+
+    Args:
+        str (str): The date string to parse.
+
+    Returns:
+        str: The parsed and formatted date string in the format 'YYYY-MM-DDTHH:MM:SS.ssssssZ'.
+    """
+    parsed_value = parser.parse(str)
+    return parsed_value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+
+
 def convert_datetime(obj):
     """
     Recursively converts date strings in ISO 8601 format with timezone offsets into \
@@ -49,8 +63,7 @@ def convert_datetime(obj):
                 obj[key] = convert_datetime(value)
             elif isinstance(value, str):
                 try:
-                    parsed_value = parser.parse(value)
-                    obj[key] = parsed_value.strftime("%Y-%m-%dT%H:%M:%SZ")
+                    obj[key] = parse_datestring(value)
                 except ValueError:
                     pass  # If parsing fails, retain the original value
             elif value is None:
@@ -59,8 +72,7 @@ def convert_datetime(obj):
         for i, value in enumerate(obj):
             if isinstance(value, str):  # Only attempt to parse strings
                 try:
-                    parsed_value = parser.parse(value)
-                    obj[i] = parsed_value
+                    obj[i] = parse_datestring(value)
                 except ValueError:
                     pass  # If parsing fails, retain the original value
             elif isinstance(value, list):
