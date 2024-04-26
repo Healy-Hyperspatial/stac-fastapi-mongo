@@ -1,3 +1,5 @@
+import os
+
 import pytest
 
 # - BASIC_AUTH={"public_endpoints":[{"path":"/","method":"GET"},{"path":"/search","method":"GET"}],"users":[{"username":"admin","password":"admin","permissions":"*"},{"username":"reader","password":"reader","permissions":[{"path":"/conformance","method":["GET"]},{"path":"/collections/{collection_id}/items/{item_id}","method":["GET"]},{"path":"/search","method":["POST"]},{"path":"/collections","method":["GET"]},{"path":"/collections/{collection_id}","method":["GET"]},{"path":"/collections/{collection_id}/items","method":["GET"]},{"path":"/queryables","method":["GET"]},{"path":"/queryables/collections/{collection_id}/queryables","method":["GET"]},{"path":"/_mgmt/ping","method":["GET"]}]}]}
@@ -6,6 +8,8 @@ import pytest
 @pytest.mark.asyncio
 async def test_get_search_not_authenticated(app_client_basic_auth):
     """Test public endpoint search without authentication"""
+    if not os.getenv("BASIC_AUTH"):
+        pytest.skip()
     params = {"query": '{"gsd": {"gt": 14}}'}
 
     response = await app_client_basic_auth.get("/search", params=params)
@@ -22,6 +26,8 @@ async def test_get_search_not_authenticated(app_client_basic_auth):
 @pytest.mark.asyncio
 async def test_post_search_authenticated(app_client_basic_auth):
     """Test protected post search with reader auhtentication"""
+    if not os.getenv("BASIC_AUTH"):
+        pytest.skip()
     params = {
         "bbox": [97.504892, -45.254738, 174.321298, -2.431580],
         "fields": {"exclude": ["properties"]},
@@ -42,6 +48,8 @@ async def test_post_search_authenticated(app_client_basic_auth):
 @pytest.mark.asyncio
 async def test_delete_resource_insufficient_permissions(app_client_basic_auth):
     """Test protected delete collection with reader auhtentication"""
+    if not os.getenv("BASIC_AUTH"):
+        pytest.skip()
     headers = {
         "Authorization": "Basic cmVhZGVyOnJlYWRlcg=="
     }  # Assuming this is a valid authorization token

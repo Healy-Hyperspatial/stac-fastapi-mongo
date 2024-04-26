@@ -15,7 +15,13 @@ from stac_fastapi.core.utilities import bbox2polygon
 from stac_fastapi.extensions.core import SortExtension
 from stac_fastapi.mongo.config import AsyncMongoDBSettings as AsyncSearchSettings
 from stac_fastapi.mongo.config import MongoDBSettings as SyncSearchSettings
-from stac_fastapi.mongo.utilities import decode_token, encode_token, serialize_doc
+from stac_fastapi.mongo.utilities import (
+    convert_obj_datetimes,
+    decode_token,
+    encode_token,
+    parse_datestring,
+    serialize_doc,
+)
 from stac_fastapi.types.errors import ConflictError, NotFoundError
 from stac_fastapi.types.stac import Collection, Item
 
@@ -251,15 +257,25 @@ class DatabaseLogic:
             Search: The filtered search object.
         """
         if "eq" in datetime_search:
-            search.add_filter({"properties.datetime": datetime_search["eq"]})
+            search.add_filter(
+                {"properties.datetime": parse_datestring(datetime_search["eq"])}
+            )
         else:
-            if "gte" in datetime_search:
+            if "gte" in datetime_search and datetime_search["gte"]:
                 search.add_filter(
-                    {"properties.datetime": {"$gte": datetime_search["gte"]}}
+                    {
+                        "properties.datetime": {
+                            "$gte": parse_datestring(datetime_search["gte"])
+                        }
+                    }
                 )
-            if "lte" in datetime_search:
+            if "lte" in datetime_search and datetime_search["lte"]:
                 search.add_filter(
-                    {"properties.datetime": {"$lte": datetime_search["lte"]}}
+                    {
+                        "properties.datetime": {
+                            "$lte": parse_datestring(datetime_search["lte"])
+                        }
+                    }
                 )
         return search
 
@@ -638,6 +654,7 @@ class DatabaseLogic:
 
         new_item = item.copy()
         new_item["_id"] = item.get("_id", ObjectId())
+        convert_obj_datetimes(new_item)
 
         existing_item = await items_collection.find_one({"_id": new_item["_id"]})
         if existing_item:

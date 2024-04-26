@@ -28,7 +28,7 @@ ROUTES = {
     "DELETE /collections/{collection_id}/items/{item_id}",
     "POST /collections",
     "POST /collections/{collection_id}/items",
-    "PUT /collections",
+    "PUT /collections/{collection_id}",
     "PUT /collections/{collection_id}/items/{item_id}",
 }
 
@@ -238,14 +238,14 @@ async def test_app_query_extension_limit_10000(app_client):
 async def test_app_sort_extension_get_asc(app_client, txn_client, ctx):
     first_item = ctx.item
     item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%SZ"
+        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
     )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
     second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
+        "%Y-%m-%dT%H:%M:%S.%fZ"
     )
     await create_item(txn_client, second_item)
 
@@ -260,14 +260,14 @@ async def test_app_sort_extension_get_asc(app_client, txn_client, ctx):
 async def test_app_sort_extension_get_desc(app_client, txn_client, ctx):
     first_item = ctx.item
     item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%SZ"
+        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
     )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
     second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
+        "%Y-%m-%dT%H:%M:%S.%fZ"
     )
     await create_item(txn_client, second_item)
 
@@ -282,14 +282,14 @@ async def test_app_sort_extension_get_desc(app_client, txn_client, ctx):
 async def test_app_sort_extension_post_asc(app_client, txn_client, ctx):
     first_item = ctx.item
     item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%SZ"
+        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
     )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
     second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
+        "%Y-%m-%dT%H:%M:%S.%fZ"
     )
     await create_item(txn_client, second_item)
 
@@ -308,14 +308,14 @@ async def test_app_sort_extension_post_asc(app_client, txn_client, ctx):
 async def test_app_sort_extension_post_desc(app_client, txn_client, ctx):
     first_item = ctx.item
     item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%SZ"
+        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
     )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
     another_item_date = item_date - timedelta(days=1)
     second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%SZ"
+        "%Y-%m-%dT%H:%M:%S.%fZ"
     )
     await create_item(txn_client, second_item)
 
