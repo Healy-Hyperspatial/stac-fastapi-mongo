@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ## [Unreleased]
 
+
+## [v3.2.0]
+
 ### Changed
 
 - Moved core basic auth logic to stac-fastapi.core. [#19](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/
@@ -55,7 +58,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ----
 
-[Unreleased]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.1.0...main>
+[Unreleased]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.2.0...main>
+[v3.2.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.1.0...v3.2.0>
 [v3.1.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.0.1...v3.1.0>
 [v3.0.1]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.0.0...v3.0.1>
 [v3.0.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/tree/v3.0.0>
