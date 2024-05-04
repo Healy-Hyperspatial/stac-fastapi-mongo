@@ -227,7 +227,7 @@ async def app_client(app):
 
 
 @pytest_asyncio.fixture(scope="session")
-async def app_auth():
+async def app_basic_auth():
     settings = AsyncSettings()
     extensions = [
         TransactionExtension(
@@ -259,14 +259,39 @@ async def app_auth():
         search_post_request_model=post_request_model,
     )
 
+    os.environ[
+        "BASIC_AUTH"
+    ] = """{
+        "public_endpoints": [
+            {"path": "/", "method": "GET"},
+            {"path": "/search", "method": "GET"}
+        ],
+        "users": [
+            {"username": "admin", "password": "admin", "permissions": "*"},
+            {
+                "username": "reader", "password": "reader",
+                "permissions": [
+                    {"path": "/conformance", "method": ["GET"]},
+                    {"path": "/collections/{collection_id}/items/{item_id}", "method": ["GET"]},
+                    {"path": "/search", "method": ["POST"]},
+                    {"path": "/collections", "method": ["GET"]},
+                    {"path": "/collections/{collection_id}", "method": ["GET"]},
+                    {"path": "/collections/{collection_id}/items", "method": ["GET"]},
+                    {"path": "/queryables", "method": ["GET"]},
+                    {"path": "/queryables/collections/{collection_id}/queryables", "method": ["GET"]},
+                    {"path": "/_mgmt/ping", "method": ["GET"]}
+                ]
+            }
+        ]
+    }"""
     apply_basic_auth(stac_api)
 
     return stac_api.app
 
 
 @pytest_asyncio.fixture(scope="session")
-async def app_client_basic_auth(app_auth):
+async def app_client_basic_auth(app_basic_auth):
     await create_collection_index()
 
-    async with AsyncClient(app=app_auth, base_url="http://test-server") as c:
+    async with AsyncClient(app=app_basic_auth, base_url="http://test-server") as c:
         yield c
