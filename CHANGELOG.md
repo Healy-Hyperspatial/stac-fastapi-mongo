@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ### Changed
 
-- Updated sfeos core to v2.4.1. [#21](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/21)
+- Updated sfeos core to v2.4.1, added new tests from sfeos. [#21](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/21)
 
 
 ## [v3.2.0]

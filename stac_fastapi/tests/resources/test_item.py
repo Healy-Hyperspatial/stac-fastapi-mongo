@@ -2,7 +2,7 @@ import json
 import os
 import uuid
 from copy import deepcopy
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from random import randint
 from urllib.parse import parse_qs, urlparse, urlsplit
 
@@ -383,6 +383,28 @@ async def test_item_search_temporal_query_post(app_client, ctx):
 
 
 @pytest.mark.asyncio
+async def test_item_search_temporal_window_timezone_get(app_client, ctx):
+    """Test GET search with spatio-temporal query ending with Zulu and pagination(core)"""
+    tzinfo = timezone(timedelta(hours=1))
+    test_item = ctx.item
+    item_date = rfc3339_str_to_datetime(test_item["properties"]["datetime"])
+    item_date_before = item_date - timedelta(seconds=1)
+    item_date_before = item_date_before.replace(tzinfo=tzinfo)
+    item_date_after = item_date + timedelta(seconds=1)
+    item_date_after = item_date_after.replace(tzinfo=tzinfo)
+
+    params = {
+        "collections": test_item["collection"],
+        "bbox": ",".join([str(coord) for coord in test_item["bbox"]]),
+        "datetime": f"{datetime_to_str(item_date_before)}/{datetime_to_str(item_date_after)}",
+    }
+    resp = await app_client.get("/search", params=params)
+    assert resp.status_code == 200
+    resp_json = resp.json()
+    assert resp_json["features"][0]["id"] == test_item["id"]
+
+
+@pytest.mark.asyncio
 async def test_item_search_temporal_window_post(app_client, ctx):
     """Test POST search with two-tailed spatio-temporal query (core)"""
     test_item = ctx.item
@@ -556,44 +578,37 @@ async def test_get_missing_item_collection(app_client):
 @pytest.mark.asyncio
 async def test_pagination_item_collection(app_client, ctx, txn_client):
     """Test item collection pagination links (paging extension)"""
-    # Initialize a list to store the expected item IDs
-    expected_item_ids = [ctx.item["id"]]
+    ids = [ctx.item["id"]]
 
-    # Ingest 5 items in addition to the default test-item
+    # Ingest 5 items
     for _ in range(5):
         ctx.item["id"] = str(uuid.uuid4())
         await create_item(txn_client, item=ctx.item)
-        expected_item_ids.append(ctx.item["id"])
+        ids.append(ctx.item["id"])
 
-    # Paginate through all items with a limit of 1 (expecting 6 requests)
+    # Paginate through all 6 items with a limit of 1 (expecting 6 requests)
     page = await app_client.get(
         f"/collections/{ctx.item['collection']}/items", params={"limit": 1}
     )
 
-    retrieved_item_ids = []
-    request_count = 0
-    for _ in range(100):
-        request_count += 1
+    item_ids = []
+    for idx in range(1, 100):
         page_data = page.json()
         next_link = list(filter(lambda link: link["rel"] == "next", page_data["links"]))
         if not next_link:
-            # Ensure that the last page contains features
-            assert page_data["features"]
+            assert idx == 6
             break
 
-        # Assert that each page contains only one feature
         assert len(page_data["features"]) == 1
-        retrieved_item_ids.append(page_data["features"][0]["id"])
+        item_ids.append(page_data["features"][0]["id"])
 
-        # Extract the next page URL
         href = next_link[0]["href"][len("http://test-server") :]
         page = await app_client.get(href)
 
-    # Assert that the number of requests made is equal to the total number of items ingested
-    assert request_count == len(expected_item_ids)
+    assert idx == len(ids)
 
-    # Confirm we have paginated through all items by comparing the expected and retrieved item IDs
-    assert not set(retrieved_item_ids) - set(expected_item_ids)
+    # Confirm we have paginated through all items
+    assert not set(item_ids) - set(ids)
 
 
 @pytest.mark.asyncio
