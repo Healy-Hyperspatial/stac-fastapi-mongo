@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ## [Unreleased]
 
+
+## [v3.2.1]
+
 ### Changed
 
 - Updated sfeos core to v2.4.1, added new tests from sfeos. [#21](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/21)
@@ -62,7 +65,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ----
 
-[Unreleased]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.2.0...main>
+[Unreleased]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.2.1...main>
+[v3.2.1]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.2.0...v3.2.1>
 [v3.2.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.1.0...v3.2.0>
 [v3.1.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.0.1...v3.1.0>
 [v3.0.1]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.0.0...v3.0.1>

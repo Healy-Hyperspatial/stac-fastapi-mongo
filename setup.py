@@ -30,7 +30,7 @@ extra_reqs = {
 
 setup(
     name="stac-fastapi.mongo",
-    version="3.2.0",
+    version="3.2.1",
     description="Mongodb stac-fastapi backend.",
     long_description=desc,
     long_description_content_type="text/markdown",
