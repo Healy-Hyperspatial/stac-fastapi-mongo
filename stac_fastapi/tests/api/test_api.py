@@ -1,6 +1,5 @@
-import copy
 import uuid
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 import pytest
 
@@ -62,11 +61,11 @@ async def test_router(app):
 
 
 @pytest.mark.asyncio
-async def test_app_transaction_extension(app_client, ctx):
-    item = copy.deepcopy(ctx.item)
+async def test_app_transaction_extension(app_client, ctx, load_test_data):
+    item = load_test_data("test_item.json")
     item["id"] = str(uuid.uuid4())
     resp = await app_client.post(f"/collections/{item['collection']}/items", json=item)
-    assert resp.status_code == 200
+    assert resp.status_code == 201
 
     await app_client.delete(f"/collections/{item['collection']}/items/{item['id']}")
 
@@ -181,8 +180,10 @@ async def test_app_fields_extension_no_null_fields(app_client, ctx, txn_client):
 
 
 @pytest.mark.asyncio
-async def test_app_fields_extension_return_all_properties(app_client, ctx, txn_client):
-    item = ctx.item
+async def test_app_fields_extension_return_all_properties(
+    app_client, ctx, txn_client, load_test_data
+):
+    item = load_test_data("test_item.json")
     resp = await app_client.get(
         "/search", params={"collections": ["test-collection"], "fields": "properties"}
     )
@@ -237,16 +238,14 @@ async def test_app_query_extension_limit_10000(app_client):
 @pytest.mark.asyncio
 async def test_app_sort_extension_get_asc(app_client, txn_client, ctx):
     first_item = ctx.item
-    item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
-    another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%S.%fZ"
+    another_item_date = first_item["properties"]["datetime"] - timedelta(days=1)
+    second_item["properties"]["datetime"] = another_item_date.isoformat().replace(
+        "+00:00", "Z"
     )
+
     await create_item(txn_client, second_item)
 
     resp = await app_client.get("/search?sortby=+properties.datetime")
@@ -259,15 +258,12 @@ async def test_app_sort_extension_get_asc(app_client, txn_client, ctx):
 @pytest.mark.asyncio
 async def test_app_sort_extension_get_desc(app_client, txn_client, ctx):
     first_item = ctx.item
-    item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
-    another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%S.%fZ"
+    another_item_date = first_item["properties"]["datetime"] - timedelta(days=1)
+    second_item["properties"]["datetime"] = another_item_date.isoformat().replace(
+        "+00:00", "Z"
     )
     await create_item(txn_client, second_item)
 
@@ -281,15 +277,12 @@ async def test_app_sort_extension_get_desc(app_client, txn_client, ctx):
 @pytest.mark.asyncio
 async def test_app_sort_extension_post_asc(app_client, txn_client, ctx):
     first_item = ctx.item
-    item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
-    another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%S.%fZ"
+    another_item_date = first_item["properties"]["datetime"] - timedelta(days=1)
+    second_item["properties"]["datetime"] = another_item_date.isoformat().replace(
+        "+00:00", "Z"
     )
     await create_item(txn_client, second_item)
 
@@ -307,15 +300,12 @@ async def test_app_sort_extension_post_asc(app_client, txn_client, ctx):
 @pytest.mark.asyncio
 async def test_app_sort_extension_post_desc(app_client, txn_client, ctx):
     first_item = ctx.item
-    item_date = datetime.strptime(
-        first_item["properties"]["datetime"], "%Y-%m-%dT%H:%M:%S.%fZ"
-    )
 
     second_item = dict(first_item)
     second_item["id"] = "another-item"
-    another_item_date = item_date - timedelta(days=1)
-    second_item["properties"]["datetime"] = another_item_date.strftime(
-        "%Y-%m-%dT%H:%M:%S.%fZ"
+    another_item_date = first_item["properties"]["datetime"] - timedelta(days=1)
+    second_item["properties"]["datetime"] = another_item_date.isoformat().replace(
+        "+00:00", "Z"
     )
     await create_item(txn_client, second_item)
 
