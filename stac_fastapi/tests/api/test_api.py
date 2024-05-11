@@ -404,8 +404,6 @@ async def test_datetime_non_interval(app_client, ctx):
         assert resp.status_code == 200
         resp_json = resp.json()
         # datetime is returned in this format "2020-02-12T12:30:22Z"
-        print(resp_json["features"][0]["properties"]["datetime"])
-        print(dt)
         assert resp_json["features"][0]["properties"]["datetime"][0:19] == dt[0:19]
 
 
