@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ## [Unreleased]
 
+### Changed
+
+- Updated sfeos core to v2.4.1, added new tests from sfeos. [#21](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/21)
+
 
 ## [v3.2.0]
 
 ### Changed
 
-- Moved core basic auth logic to stac-fastapi.core. [#19](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/
-- Updated stac-fastapi.core to v2.4.0. [#19](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/
+- Moved core basic auth logic to stac-fastapi.core. [#19](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/19)
+- Updated stac-fastapi.core to v2.4.0. [#19](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/19)
 
 
 ## [v3.1.0]
