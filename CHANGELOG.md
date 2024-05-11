@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ### Changed
 
-- Add support for python 3.12.
+- Add support for python 3.12. [#22](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/22)
 
 
 ## [v3.2.1]
