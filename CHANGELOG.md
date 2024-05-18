@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ## [Unreleased]
 
+### Changed
+
+- Updated sfeos core to v3.0.0a0, fixed datetime functionality. [#23](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/23)
+
 
 ## [v3.2.1]
 

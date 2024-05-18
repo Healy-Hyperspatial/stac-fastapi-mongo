@@ -6,12 +6,12 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "stac-fastapi.core==2.4.1",
+    "stac-fastapi.core==3.0.0a0",
     "motor==3.3.2",
     "pymongo==4.6.2",
     "uvicorn",
     "starlette",
-    "typing_extensions==4.4.0",
+    "typing_extensions==4.8.0",
 ]
 
 extra_reqs = {
