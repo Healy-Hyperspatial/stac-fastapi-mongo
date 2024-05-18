@@ -1,6 +1,7 @@
 """utilities for stac-fastapi.mongo."""
 
 from base64 import urlsafe_b64decode, urlsafe_b64encode
+from datetime import timezone
 
 from bson import ObjectId
 from dateutil import parser  # type: ignore
@@ -31,48 +32,21 @@ def encode_token(token_value: str) -> str:
     return encoded_token
 
 
-def parse_datestring(str):
-    """Parse date string using dateutil.parser.parse() and returns a string formatted \
-    as ISO 8601 with milliseconds and 'Z' timezone indicator.
+def parse_datestring(dt_str: str) -> str:
+    """
+    Normalize various ISO 8601 datetime formats to a consistent format.
 
     Args:
-        str (str): The date string to parse.
+        dt_str (str): The datetime string in ISO 8601 format.
 
     Returns:
-        str: The parsed and formatted date string in the format 'YYYY-MM-DDTHH:MM:SS.ssssssZ'.
+        str: The normalized datetime string in the format "YYYY-MM-DDTHH:MM:SSZ".
     """
-    parsed_value = parser.parse(str)
-    return parsed_value.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    # Parse the datetime string to datetime object
+    dt = parser.isoparse(dt_str)
 
+    # Convert the datetime to UTC and remove microseconds
+    dt = dt.astimezone(timezone.utc).replace(microsecond=0)
 
-def convert_obj_datetimes(obj):
-    """Recursively explores dictionaries and lists, attempting to parse strings as datestrings \
-    into a specific format.
-
-    Args:
-        obj (dict or list): The dictionary or list containing date strings to convert.
-
-    Returns:
-        dict or list: The converted dictionary or list with date strings in the desired format.
-    """
-    if isinstance(obj, dict):
-        for key, value in obj.items():
-            if isinstance(value, dict) or isinstance(value, list):
-                obj[key] = convert_obj_datetimes(value)
-            elif isinstance(value, str):
-                try:
-                    obj[key] = parse_datestring(value)
-                except ValueError:
-                    pass  # If parsing fails, retain the original value
-            elif value is None:
-                obj[key] = None  # Handle null values
-    elif isinstance(obj, list):
-        for i, value in enumerate(obj):
-            if isinstance(value, str):  # Only attempt to parse strings
-                try:
-                    obj[i] = parse_datestring(value)
-                except ValueError:
-                    pass  # If parsing fails, retain the original value
-            elif isinstance(value, list):
-                obj[i] = convert_obj_datetimes(value)  # Recursively handle nested lists
-    return obj
+    # Format the datetime to the specified format
+    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")

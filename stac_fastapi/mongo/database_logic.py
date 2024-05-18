@@ -16,7 +16,6 @@ from stac_fastapi.extensions.core import SortExtension
 from stac_fastapi.mongo.config import AsyncMongoDBSettings as AsyncSearchSettings
 from stac_fastapi.mongo.config import MongoDBSettings as SyncSearchSettings
 from stac_fastapi.mongo.utilities import (
-    convert_obj_datetimes,
     decode_token,
     encode_token,
     parse_datestring,
@@ -383,7 +382,6 @@ class DatabaseLogic:
         Returns:
             A MongoDB query as a dictionary.
         """
-        print("CQL2 filter:", cql2_filter)
         op_mapping = {
             ">": "$gt",
             ">=": "$gte",
@@ -505,7 +503,6 @@ class DatabaseLogic:
             mongo_query = DatabaseLogic.translate_cql2_to_mongo(_filter)
             search_adapter.add_filter(mongo_query)
 
-        print("search adapter: ", search_adapter)
         return search_adapter
 
     @staticmethod
@@ -568,8 +565,6 @@ class DatabaseLogic:
         collection = db[ITEMS_INDEX]
 
         query = {"$and": search.filters} if search and search.filters else {}
-
-        print("Query: ", query)
 
         if collection_ids:
             query["collection"] = {"$in": collection_ids}
@@ -654,7 +649,6 @@ class DatabaseLogic:
 
         new_item = item.copy()
         new_item["_id"] = item.get("_id", ObjectId())
-        convert_obj_datetimes(new_item)
 
         existing_item = await items_collection.find_one({"_id": new_item["_id"]})
         if existing_item:
@@ -737,7 +731,7 @@ class DatabaseLogic:
 
         # Transform item using item_serializer for MongoDB compatibility
         mongo_item = self.item_serializer.stac_to_db(item, base_url)
-        print("mongo item id: ", mongo_item["id"])
+
         if not exist_ok:
             existing_item = items_collection.find_one({"id": mongo_item["id"]})
             if existing_item:
