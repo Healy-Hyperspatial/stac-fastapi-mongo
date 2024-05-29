@@ -12,6 +12,7 @@ install_requires = [
     "uvicorn",
     "starlette",
     "typing_extensions==4.8.0",
+    "stac-pydantic==3.0.0",
 ]
 
 extra_reqs = {
