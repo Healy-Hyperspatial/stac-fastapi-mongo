@@ -75,7 +75,7 @@ async def create_item_index():
         collection = db[ITEMS_INDEX]
         try:
             await collection.create_index([("properties.datetime", -1)])
-            await collection.create_index([("id", 1)], unique=True)
+            await collection.create_index([("collection", 1), ("id", 1)], unique=True)
             await collection.create_index([("geometry", "2dsphere")])
             print(f"Indexes created successfully for collection: {ITEMS_INDEX}.")
         except Exception as e:
