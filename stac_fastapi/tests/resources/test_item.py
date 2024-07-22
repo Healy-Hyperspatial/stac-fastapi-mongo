@@ -34,7 +34,7 @@ database_logic = DatabaseLogic()
 
 
 @pytest.mark.asyncio
-async def test_create_item_indices(app_client, ctx, txn_client):
+async def test_create_and_delete_item(app_client, ctx, txn_client):
     """Test creation and deletion of a single item (transactions extension)"""
 
     test_item = ctx.item
