@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 - Add support for python 3.12. [#22](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/22)
 - Updated sfeos core to v3.0.0a0, fixed datetime functionality. [#23](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/23)
 
+### Fixed
+
+- Added a new index based on collection id and item id to ensure item IDs aren't required to be unique across all collections. [#26](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/26)
+
 
 ## [v3.2.1]
 

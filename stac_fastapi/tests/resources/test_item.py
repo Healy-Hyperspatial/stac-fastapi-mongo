@@ -890,3 +890,31 @@ async def test_search_datetime_validation_errors(app_client):
         # resp = await app_client.get("/search?datetime={}".format(dt))
         # assert resp.status_code == 400
         # updated for same reason as sfeos
+
+
+@pytest.mark.asyncio
+async def test_create_same_item_in_different_collections(
+    app_client, ctx, load_test_data
+):
+    """Test creation of items and indices"""
+
+    test_item = load_test_data("test_item.json")
+    test_collection = load_test_data("test_collection.json")
+
+    # create item in collection where an item with same id already exists
+    resp = await app_client.post(
+        f"/collections/{test_collection['id']}/items", json=test_item
+    )
+    assert resp.status_code == 409, resp.json()
+
+    # prep second collection
+    test_collection["id"] = "test_collection2"
+    resp = await app_client.post("/collections", json=test_collection)
+    assert resp.status_code == 201, resp.json()
+
+    # create item with same id in second collection
+    test_item["collection"] = test_collection["id"]
+    resp = await app_client.post(
+        f"/collections/{test_collection['id']}/items", json=test_item
+    )
+    assert resp.status_code == 201, resp.json()

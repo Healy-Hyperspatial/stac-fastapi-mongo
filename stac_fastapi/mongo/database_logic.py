@@ -75,7 +75,7 @@ async def create_item_index():
         collection = db[ITEMS_INDEX]
         try:
             await collection.create_index([("properties.datetime", -1)])
-            await collection.create_index([("id", 1)], unique=True)
+            await collection.create_index([("collection", 1), ("id", 1)], unique=True)
             await collection.create_index([("geometry", "2dsphere")])
             print(f"Indexes created successfully for collection: {ITEMS_INDEX}.")
         except Exception as e:
@@ -691,7 +691,9 @@ class DatabaseLogic:
         mongo_item = self.item_serializer.stac_to_db(item, base_url)
 
         if not exist_ok:
-            existing_item = await items_collection.find_one({"id": mongo_item["id"]})
+            existing_item = await items_collection.find_one(
+                {"collection": mongo_item["collection"], "id": mongo_item["id"]}
+            )
             if existing_item:
                 raise ConflictError(
                     f"Item {mongo_item['id']} in collection {mongo_item['collection']} already exists"
@@ -733,7 +735,9 @@ class DatabaseLogic:
         mongo_item = self.item_serializer.stac_to_db(item, base_url)
 
         if not exist_ok:
-            existing_item = items_collection.find_one({"id": mongo_item["id"]})
+            existing_item = items_collection.find_one(
+                {"collection": mongo_item["collection"], "id": mongo_item["id"]}
+            )
             if existing_item:
                 raise ConflictError(
                     f"Item {mongo_item['id']} in collection {mongo_item['collection']} already exists"
