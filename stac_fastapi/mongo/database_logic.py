@@ -691,7 +691,9 @@ class DatabaseLogic:
         mongo_item = self.item_serializer.stac_to_db(item, base_url)
 
         if not exist_ok:
-            existing_item = await items_collection.find_one({"id": mongo_item["id"]})
+            existing_item = await items_collection.find_one(
+                {"id": mongo_item["id"], "collection": mongo_item["collection"]}
+            )
             if existing_item:
                 raise ConflictError(
                     f"Item {mongo_item['id']} in collection {mongo_item['collection']} already exists"
@@ -733,7 +735,9 @@ class DatabaseLogic:
         mongo_item = self.item_serializer.stac_to_db(item, base_url)
 
         if not exist_ok:
-            existing_item = items_collection.find_one({"id": mongo_item["id"]})
+            existing_item = items_collection.find_one(
+                {"id": mongo_item["id"], "collection": mongo_item["collection"]}
+            )
             if existing_item:
                 raise ConflictError(
                     f"Item {mongo_item['id']} in collection {mongo_item['collection']} already exists"
