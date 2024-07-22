@@ -692,7 +692,7 @@ class DatabaseLogic:
 
         if not exist_ok:
             existing_item = await items_collection.find_one(
-                {"id": mongo_item["id"], "collection": mongo_item["collection"]}
+                {"collection": mongo_item["collection"], "id": mongo_item["id"]}
             )
             if existing_item:
                 raise ConflictError(
@@ -736,7 +736,7 @@ class DatabaseLogic:
 
         if not exist_ok:
             existing_item = items_collection.find_one(
-                {"id": mongo_item["id"], "collection": mongo_item["collection"]}
+                {"collection": mongo_item["collection"], "id": mongo_item["id"]}
             )
             if existing_item:
                 raise ConflictError(
