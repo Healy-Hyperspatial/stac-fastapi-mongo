@@ -1,7 +1,7 @@
 """utilities for stac-fastapi.mongo."""
 
 from base64 import urlsafe_b64decode, urlsafe_b64encode
-from datetime import timezone
+from datetime import datetime, timezone
 
 from bson import ObjectId
 from dateutil import parser  # type: ignore
@@ -32,7 +32,7 @@ def encode_token(token_value: str) -> str:
     return encoded_token
 
 
-def parse_datestring(dt_str: str) -> str:
+def parse_datestring(dt_str: str) -> datetime:
     """
     Normalize various ISO 8601 datetime formats to a consistent format.
 
@@ -45,8 +45,5 @@ def parse_datestring(dt_str: str) -> str:
     # Parse the datetime string to datetime object
     dt = parser.isoparse(dt_str)
 
-    # Convert the datetime to UTC and remove microseconds
-    dt = dt.astimezone(timezone.utc).replace(microsecond=0)
-
-    # Format the datetime to the specified format
-    return dt.strftime("%Y-%m-%dT%H:%M:%SZ")
+    # Convert the datetime to UTC
+    return dt.astimezone(timezone.utc)
