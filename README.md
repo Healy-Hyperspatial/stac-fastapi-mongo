@@ -1,6 +1,6 @@
 # stac-fastapi-mongo
 
-## Mongo backend for the stac-fastapi project built on top of the [sfeos](https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch) core api library. 
+## Mongo backend for the stac-fastapi project built on top of the [sfeos](https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch) core api library.
 
 [![PyPI version](https://badge.fury.io/py/stac-fastapi.mongo.svg)](https://badge.fury.io/py/stac-fastapi.mongo)
 [![Join the chat at https://gitter.im/stac-fastapi-mongo/community](https://badges.gitter.im/stac-fastapi-mongo/community.svg)](https://gitter.im/stac-fastapi-mongo/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -39,7 +39,7 @@ pre-commit run --all-files
 docker-compose up mongo
 docker-compose build app-mongo
 ```
-  
+
 ## Running Mongo API on localhost:8084
 
 ```shell
@@ -56,15 +56,15 @@ curl -X "POST" "http://localhost:8084/collections" \
 }'
 ```
 
-Note: this "Collections Transaction" behavior is not part of the STAC API, but may be soon.  
+Note: this "Collections Transaction" behavior is not part of the STAC API, but may be soon.
 
 
 ## Collection pagination
 
 The collections route handles optional `limit` and `token` parameters. The `links` field that is
-returned from the `/collections` route contains a `next` link with the token that can be used to 
+returned from the `/collections` route contains a `next` link with the token that can be used to
 get the next page of results.
-   
+
 ```shell
 curl -X "GET" "http://localhost:8084/collections?limit=1&token=example_token"
 ```
@@ -160,3 +160,7 @@ Example: This example demonstrates the configuration for public endpoints, allow
 ### Basic Authentication Configurations
 
 See `docker-compose.basic_auth_protected.yml` and `docker-compose.basic_auth_public.yml` for basic authentication configurations.
+
+## Note for read-only databases
+
+If you are using a read-only MongoDB user, the `MONGO_CREATE_INDEXES` environment variable should be set to "false" (as a string and not a boolean) to avoid creating indexes in the database. When this environment variable is not set, the default is to create indexes. See [Github issue #28](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/28)
