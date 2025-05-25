@@ -1,5 +1,12 @@
 # stac-fastapi-mongo
 
+<!-- markdownlint-disable MD033 MD041 -->
+
+<p align="left">
+  <img src="assets/stac-fastapi-mongo.png" width=560>
+</p>
+
+
 MongoDB backend for the [stac-fastapi](https://github.com/stac-utils/stac-fastapi) project built on top of the [sfeos](https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch) core API library.
 
 [![Downloads](https://static.pepy.tech/badge/stac-fastapi-mongo?color=blue)](https://pepy.tech/project/stac-fastapi-mongo)
