@@ -2,8 +2,14 @@
 
 ## Mongo backend for the stac-fastapi project built on top of the [sfeos](https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch) core api library.
 
-[![PyPI version](https://badge.fury.io/py/stac-fastapi.mongo.svg)](https://badge.fury.io/py/stac-fastapi.mongo)
-[![Join the chat at https://gitter.im/stac-fastapi-mongo/community](https://badges.gitter.im/stac-fastapi-mongo/community.svg)](https://gitter.im/stac-fastapi-mongo/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Downloads](https://static.pepy.tech/badge/stac-fastapi-mongo?color=blue)](https://pepy.tech/project/stac-fastapi-mongo)
+  [![GitHub contributors](https://img.shields.io/github/contributors/Healy-Hyperspatial/stac-fastapi-mongo?color=blue)](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/graphs/contributors)
+  [![GitHub stars](https://img.shields.io/github/stars/Healy-Hyperspatial/stac-fastapi-mongo.svg?color=blue)](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/stargazers)
+  [![GitHub forks](https://img.shields.io/github/forks/Healy-Hyperspatial/stac-fastapi-mongo.svg?color=blue)](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/network/members)
+   [![PyPI version](https://img.shields.io/pypi/v/stac-fastapi-mongo.svg?color=blue)](https://pypi.org/project/stac-fastapi-mongo/)
+  [![STAC](https://img.shields.io/badge/STAC-1.1.0-blue.svg)](https://github.com/radiantearth/stac-spec/tree/v1.1.0)
+
+<!-- [![Join the chat at https://gitter.im/stac-fastapi-mongo/community](https://badges.gitter.im/stac-fastapi-mongo/community.svg)](https://gitter.im/stac-fastapi-mongo/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) -->
 
 To install from PyPI:
 
