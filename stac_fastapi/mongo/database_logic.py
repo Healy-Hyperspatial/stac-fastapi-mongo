@@ -8,6 +8,7 @@ from typing import Any, Dict, Iterable, List, Optional, Protocol, Tuple, Type, U
 import attr
 from bson import ObjectId
 from pymongo.errors import BulkWriteError, PyMongoError
+from starlette.requests import Request
 
 from stac_fastapi.core import serializers
 from stac_fastapi.core.extensions import filter
@@ -158,18 +159,20 @@ class DatabaseLogic:
         default=serializers.CollectionSerializer
     )
 
+    extensions: List[str] = attr.ib(default=attr.Factory(list))
+
     """CORE LOGIC"""
 
     async def get_all_collections(
-        self, token: Optional[str], limit: int, base_url: str
+        self, token: Optional[str], limit: int, request: Request
     ) -> Tuple[List[Dict[str, Any]], Optional[str]]:
         """
         Retrieve a list of all collections from the MongoDB database, supporting pagination.
 
         Args:
             token (Optional[str]): The pagination token, which is the ID of the last collection seen.
-            limit (int): The maximum number of results to return.
-            base_url (str): The base URL for constructing fully qualified links.
+            limit (int): The maximum number of collections to return.
+            request (Request): The request object, used to construct links.
 
         Returns:
             Tuple[List[Dict[str, Any]], Optional[str]]: A tuple containing a list of collections
@@ -193,7 +196,11 @@ class DatabaseLogic:
             print(f"Next token (for next page): {next_token}")
 
         serialized_collections = [
-            self.collection_serializer.db_to_stac(serialize_doc(collection), base_url)
+            self.collection_serializer.db_to_stac(
+                collection=serialize_doc(collection),
+                request=request,
+                extensions=self.extensions,
+            )
             for collection in collections
         ]
 
@@ -944,7 +951,7 @@ class DatabaseLogic:
         items_collection = db[ITEMS_INDEX]
 
         # Prepare the documents for insertion
-        documents = [item.dict(by_alias=True) for item in processed_items]
+        documents = [item.model_dump(by_alias=True) for item in processed_items]
 
         try:
             await items_collection.insert_many(documents, ordered=False)
@@ -973,7 +980,7 @@ class DatabaseLogic:
         items_collection = db[ITEMS_INDEX]
 
         # Prepare the documents for insertion
-        documents = [item.dict(by_alias=True) for item in processed_items]
+        documents = [item.model_dump(by_alias=True) for item in processed_items]
 
         try:
             items_collection.insert_many(documents, ordered=False)

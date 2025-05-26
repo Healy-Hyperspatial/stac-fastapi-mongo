@@ -9,11 +9,10 @@ from urllib.parse import parse_qs, urlparse, urlsplit
 import ciso8601
 import pytest
 from geojson_pydantic.geometries import Polygon
-from pystac.utils import datetime_to_str
 from stac_pydantic import api
 
 from stac_fastapi.core.core import CoreClient
-from stac_fastapi.core.datetime_utils import now_to_rfc3339_str
+from stac_fastapi.core.datetime_utils import datetime_to_str, now_to_rfc3339_str
 from stac_fastapi.types.core import LandingPageMixin
 
 from ..conftest import create_item, refresh_indices
@@ -217,7 +216,7 @@ async def test_get_item_collection(app_client, ctx, txn_client):
     assert resp.status_code == 200
 
     item_collection = resp.json()
-    if matched := item_collection["context"].get("matched"):
+    if matched := item_collection.get("numMatched"):
         assert matched == item_count + 1
 
 
@@ -288,13 +287,13 @@ async def test_pagination(app_client, load_test_data):
     )
     assert resp.status_code == 200
     first_page = resp.json()
-    assert first_page["context"]["returned"] == 3
+    assert first_page["numReturned"] == 3
 
     url_components = urlsplit(first_page["links"][0]["href"])
     resp = await app_client.get(f"{url_components.path}?{url_components.query}")
     assert resp.status_code == 200
     second_page = resp.json()
-    assert second_page["context"]["returned"] == 3
+    assert second_page["numReturned"] == 3
 
 
 @pytest.mark.skip(reason="created and updated fields not added with stac fastapi 3?")
@@ -551,14 +550,14 @@ async def test_item_search_get_query_extension(app_client, ctx):
         ),
     }
     resp = await app_client.get("/search", params=params)
-    assert resp.json()["context"]["returned"] == 0
+    assert resp.json()["numReturned"] == 0
 
     params["query"] = json.dumps(
         {"proj:epsg": {"eq": test_item["properties"]["proj:epsg"]}}
     )
     resp = await app_client.get("/search", params=params)
     resp_json = resp.json()
-    assert resp_json["context"]["returned"] == 1
+    assert resp_json["numReturned"] == 1
     assert (
         resp_json["features"][0]["properties"]["proj:epsg"]
         == test_item["properties"]["proj:epsg"]
@@ -766,7 +765,11 @@ async def test_field_extension_post(app_client, ctx):
         "ids": [test_item["id"]],
         "fields": {
             "exclude": ["assets.B1"],
-            "include": ["properties.eo:cloud_cover", "properties.orientation"],
+            "include": [
+                "properties.eo:cloud_cover",
+                "properties.orientation",
+                "assets",
+            ],
         },
     }
 
@@ -794,7 +797,7 @@ async def test_field_extension_exclude_and_include(app_client, ctx):
 
     resp = await app_client.post("/search", json=body)
     resp_json = resp.json()
-    assert "eo:cloud_cover" not in resp_json["features"][0]["properties"]
+    assert "properties" not in resp_json["features"][0]
 
 
 @pytest.mark.asyncio
@@ -812,7 +815,7 @@ async def test_field_extension_exclude_default_includes(app_client, ctx):
 async def test_search_intersects_and_bbox(app_client):
     """Test POST search intersects and bbox are mutually exclusive (core)"""
     bbox = [-118, 34, -117, 35]
-    geoj = Polygon.from_bounds(*bbox).dict(exclude_none=True)
+    geoj = Polygon.from_bounds(*bbox).model_dump(exclude_none=True)
     params = {"bbox": bbox, "intersects": geoj}
     resp = await app_client.post("/search", json=params)
     assert resp.status_code == 400
