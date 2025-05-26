@@ -22,15 +22,14 @@ def _mongodb_config() -> Dict[str, Any]:
     ssl_cert_reqs = ssl.CERT_REQUIRED if verify_certs else ssl.CERT_NONE
 
     # Adjust URI based on whether using SRV record or not
-    # if "mongodb+srv" in os.getenv("MONGO_CONNECTION_STRING", ""):
-    #     uri = f"mongodb+srv://{user}:{password}@{host}/{database}?retryWrites=true&w=majority"
-    # else:
-    #     uri = f"mongodb://{user}:{password}@{host}:{port}/{database}?retryWrites=true"
-
     if "mongodb+srv" in os.getenv("MONGO_CONNECTION_STRING", ""):
-        uri = f"mongodb+srv://{user}:{password}@{host}?retryWrites=true&w=majority"
+        uri = "mongodb+srv://{}:{}@{}?retryWrites=true&w=majority".format(
+            user, password, host
+        )
     else:
-        uri = f"mongodb://{user}:{password}@{host}:{port}?retryWrites=true"
+        uri = "mongodb://{}:{}@{}:{}?retryWrites=true".format(
+            user, password, host, port
+        )
 
     if use_ssl:
         uri += "&ssl=true&ssl_cert_reqs={}".format(ssl_cert_reqs)
