@@ -46,7 +46,9 @@ async def create_collection_index():
         try:
             db = client[DATABASE]
             await db[COLLECTIONS_INDEX].create_index([("id", 1)], unique=True)
-            logger.info(f"Index created successfully for collection: {COLLECTIONS_INDEX}")
+            logger.info(
+                f"Index created successfully for collection: {COLLECTIONS_INDEX}"
+            )
         except Exception as e:
             # Handle exceptions, which could be due to existing index conflicts, etc.
             logger.error(
@@ -71,7 +73,9 @@ async def create_item_index():
         try:
             db = client[DATABASE]
             # Create indexes for the items collection
-            await db[ITEMS_INDEX].create_index([("id", 1), ("collection", 1)], unique=True)
+            await db[ITEMS_INDEX].create_index(
+                [("id", 1), ("collection", 1)], unique=True
+            )
             await db[ITEMS_INDEX].create_index([("geometry", "2dsphere")])
             await db[ITEMS_INDEX].create_index([("properties.datetime", 1)])
             logger.info(f"Indexes created successfully for collection: {ITEMS_INDEX}")
