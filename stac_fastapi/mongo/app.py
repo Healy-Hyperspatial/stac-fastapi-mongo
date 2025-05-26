@@ -1,13 +1,10 @@
 """FastAPI application."""
 
-import os
-import json
 import logging
-from fastapi import Depends
+import os
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
-from stac_fastapi.core.basic_auth import BasicAuth
 from stac_fastapi.core.core import (
     CoreClient,
     EsAsyncBaseFiltersClient,
@@ -81,6 +78,7 @@ api = StacApi(
     route_dependencies=get_route_dependencies(),
 )
 app = api.app
+
 
 @app.on_event("startup")
 async def _startup_event() -> None:
