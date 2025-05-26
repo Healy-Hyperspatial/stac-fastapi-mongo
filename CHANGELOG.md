@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 ### Fixed
 
 - Added a new index based on collection id and item id to ensure item IDs aren't required to be unique across all collections. [#26](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/26)
-
+- Updated test fixtures to use ASGITransport with AsyncClient for compatibility with newer httpx versions.
 
 ## [v3.2.1]
 

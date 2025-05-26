@@ -1,5 +1,3 @@
-version: '3.9'
-
 services:
   app-mongo:
     container_name: stac-fastapi-mongo
