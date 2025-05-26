@@ -290,8 +290,6 @@ This example configures admin authentication for all routes, with a separate rea
 ]
 ```
 
-> **Note**: The older `BASIC_AUTH` environment variable format is deprecated and will be removed in a future release.
-
 ## Note for Read-Only Databases
 
 If you are using a read-only MongoDB user, the `MONGO_CREATE_INDEXES` environment variable should be set to "false" (as a string and not a boolean) to avoid creating indexes in the database. When this environment variable is not set, the default is to create indexes. See [GitHub issue #28](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/issues/28)
