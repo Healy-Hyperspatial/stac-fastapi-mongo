@@ -6,7 +6,7 @@ MONGO_APP_PORT ?= 8084
 MONGO_HOST ?= docker.for.mac.localhost
 MONGO_PORT ?= 27017
 
-run_mongo = docker-compose \
+run_mongo = docker compose \
 	run \
 	-p ${EXTERNAL_APP_PORT}:${MONGO_APP_PORT} \
 	-e PY_IGNORE_IMPORTMISMATCH=1 \
@@ -30,7 +30,7 @@ run-deploy-locally:
 
 .PHONY: image-dev
 image-dev:
-	docker-compose build
+	docker compose build
 
 .PHONY: docker-run-mongo
 docker-run-mongo: image-dev
@@ -44,16 +44,16 @@ docker-shell-mongo:
 .PHONY: test-mongo
 test-mongo:
 	-$(run_mongo) /bin/bash -c 'export && ./scripts/wait-for-it-es.sh mongo:27017 && cd stac_fastapi/tests/ && pytest'
-	docker-compose down
+	docker compose down
 
 .PHONY: test
 test:
-	-$(run_es) /bin/bash -c 'export && ./scripts/wait-for-it-es.sh mongo:27017 && cd stac_fastapi/tests/ && pytest'
-	docker-compose down
+	-$(run_mongo) /bin/bash -c 'export && ./scripts/wait-for-it-es.sh mongo:27017 && cd stac_fastapi/tests/ && pytest'
+	docker compose down
 
 .PHONY: run-database-mongo
 run-database-mongo:
-	docker-compose run --rm mongo
+	docker compose run --rm mongo
 
 .PHONY: pybase-install
 pybase-install:
