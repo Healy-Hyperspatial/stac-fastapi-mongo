@@ -12,11 +12,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 - Add support for python 3.12. [#22](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/22)
 - Updated sfeos core to v3.0.0a0, fixed datetime functionality. [#23](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/23)
 - Create indexes in MongoDB at startup only if environment variable MONGO_CREATE_INDEXES is set to "true" (default when the env variable is not set: "true"). [#31](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/31)
+- Improved README with table of contents, better formatting, and added Contributing section. [#34](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/34)
 
 ### Fixed
 
 - Added a new index based on collection id and item id to ensure item IDs aren't required to be unique across all collections. [#26](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/26)
-- Updated test fixtures to use ASGITransport with AsyncClient for compatibility with newer httpx versions.
+- Updated test fixtures to use ASGITransport with AsyncClient for compatibility with newer httpx versions. [#35](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/35)
 
 ## [v3.2.1]
 
