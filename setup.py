@@ -12,18 +12,18 @@ install_requires = [
     "uvicorn",
     "starlette",
     "typing_extensions==4.8.0",
-    "stac-pydantic==3.0.0",
+    "stac_pydantic==3.1.0",
 ]
 
 extra_reqs = {
     "dev": [
-        "pytest",
-        "pytest-cov",
-        "pytest-asyncio",
-        "pre-commit",
-        "requests",
-        "ciso8601",
-        "httpx",
+        "pytest~=7.0.0",
+        "pytest-cov~=4.0.0",
+        "pytest-asyncio~=0.21.0",
+        "pre-commit~=3.0.0",
+        "requests>=2.32.0,<3.0.0",
+        "ciso8601~=2.3.0",
+        "httpx>=0.24.0,<0.28.0",
     ],
     "docs": ["mkdocs", "mkdocs-material", "pdocs"],
     "server": ["uvicorn[standard]==0.19.0"],
