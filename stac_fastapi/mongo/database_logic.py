@@ -46,46 +46,42 @@ async def create_collection_index():
         try:
             db = client[DATABASE]
             await db[COLLECTIONS_INDEX].create_index([("id", 1)], unique=True)
-            print(f"Index created successfully for collection: {COLLECTIONS_INDEX}.")
+            logger.info(f"Index created successfully for collection: {COLLECTIONS_INDEX}")
         except Exception as e:
             # Handle exceptions, which could be due to existing index conflicts, etc.
-            print(
-                f"An error occurred while creating indexe for collection {COLLECTIONS_INDEX}: {e}"
+            logger.error(
+                f"Error creating index for collection {COLLECTIONS_INDEX}: {e}"
             )
         finally:
-            print(f"Closing client: {client}")
+            logger.debug(f"Closing MongoDB client: {client}")
             client.close()
     else:
-        print("Failed to create MongoDB client.")
+        logger.error("Failed to create MongoDB client")
 
 
 async def create_item_index():
     """
-    Ensure indexes for a specific collection of items in MongoDB using the asynchronous client.
-
-    Args:
-        collection_id (str): Collection identifier used to derive the MongoDB collection name for items.
+    Ensure indexes for the items collection in MongoDB using the asynchronous client.
 
     Returns:
         None
     """
     client = AsyncSearchSettings().create_client
-
     if client:
-        db = client[DATABASE]
-        collection = db[ITEMS_INDEX]
         try:
-            await collection.create_index([("properties.datetime", -1)])
-            await collection.create_index([("collection", 1), ("id", 1)], unique=True)
-            await collection.create_index([("geometry", "2dsphere")])
-            print(f"Indexes created successfully for collection: {ITEMS_INDEX}.")
+            db = client[DATABASE]
+            # Create indexes for the items collection
+            await db[ITEMS_INDEX].create_index([("id", 1), ("collection", 1)], unique=True)
+            await db[ITEMS_INDEX].create_index([("geometry", "2dsphere")])
+            await db[ITEMS_INDEX].create_index([("properties.datetime", 1)])
+            logger.info(f"Indexes created successfully for collection: {ITEMS_INDEX}")
         except Exception as e:
             # Handle exceptions, which could be due to existing index conflicts, etc.
-            print(
-                f"An error occurred while creating indexes for collection {ITEMS_INDEX}: {e}"
-            )
+            logger.error(f"Error creating indexes for collection {ITEMS_INDEX}: {e}")
         finally:
             client.close()
+    else:
+        logger.error("Failed to create MongoDB client")
 
 
 def mk_item_id(item_id: str, collection_id: str):
@@ -193,7 +189,7 @@ class DatabaseLogic:
         if len(collections) == limit:
             # Assumes collections are sorted by 'id' in ascending order.
             next_token = encode_token(collections[-1]["id"])
-            print(f"Next token (for next page): {next_token}")
+            logger.debug(f"Next token (for next page): {next_token}")
 
         serialized_collections = [
             self.collection_serializer.db_to_stac(
@@ -605,7 +601,7 @@ class DatabaseLogic:
 
             return items, maybe_count, next_token
         except PyMongoError as e:
-            print(f"Database operation failed: {e}")
+            logger.error(f"Database operation failed: {e}")
             raise
 
     """ TRANSACTION LOGIC """
@@ -809,7 +805,7 @@ class DatabaseLogic:
             await collections_collection.insert_one(collection)
         except PyMongoError as e:
             # Catch any MongoDB error and raise an appropriate error
-            print(f"Failed to create collection {collection['id']}: {e}")
+            logger.error(f"Failed to create collection {collection['id']}: {e}")
             raise ConflictError(f"Failed to create collection {collection['id']}: {e}")
 
         collection = serialize_doc(collection)
@@ -839,7 +835,7 @@ class DatabaseLogic:
             return serialized_collection
         except PyMongoError as e:
             # This is a general catch-all for MongoDB errors; adjust as needed for more specific handling
-            print(f"Failed to find collection {collection_id}: {e}")
+            logger.error(f"Failed to find collection {collection_id}: {e}")
             raise NotFoundError(f"Collection {collection_id} not found")
 
     async def update_collection(
@@ -999,9 +995,9 @@ class DatabaseLogic:
 
         try:
             await items_collection.delete_many({})
-            print("All items have been deleted.")
+            logger.info("All items have been deleted.")
         except Exception as e:
-            print(f"Error deleting items: {e}")
+            logger.error(f"Error deleting items: {e}")
 
     async def delete_collections(self) -> None:
         """
@@ -1014,6 +1010,6 @@ class DatabaseLogic:
 
         try:
             await collections_collection.delete_many({})
-            print("All collections have been deleted.")
+            logger.info("All collections have been deleted.")
         except Exception as e:
-            print(f"Error deleting collections: {e}")
+            logger.error(f"Error deleting collections: {e}")
