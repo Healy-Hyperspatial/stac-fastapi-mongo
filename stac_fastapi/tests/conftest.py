@@ -6,7 +6,7 @@ from typing import Any, Callable, Dict, Optional
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from httpx import AsyncClient, ASGITransport
 from stac_pydantic import api
 
 from stac_fastapi.api.app import StacApi
@@ -223,7 +223,7 @@ async def app():
 async def app_client(app):
     await create_collection_index()
 
-    async with AsyncClient(app=app, base_url="http://test-server") as c:
+    async with AsyncClient(transport=ASGITransport(app=app), base_url="http://test-server") as c:
         yield c
 
 
@@ -294,5 +294,5 @@ async def app_basic_auth():
 async def app_client_basic_auth(app_basic_auth):
     await create_collection_index()
 
-    async with AsyncClient(app=app_basic_auth, base_url="http://test-server") as c:
+    async with AsyncClient(transport=ASGITransport(app=app_basic_auth), base_url="http://test-server") as c:
         yield c
