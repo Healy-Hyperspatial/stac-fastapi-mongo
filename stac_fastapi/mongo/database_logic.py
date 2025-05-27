@@ -632,36 +632,89 @@ class DatabaseLogic:
         if not collection_exists:
             raise NotFoundError(f"Collection {collection_id} does not exist")
 
-    async def create_item(self, item: Item, refresh: bool = False):
+    async def async_prep_create_item(
+        self, item: Item, base_url: str, exist_ok: bool = False
+    ) -> Item:
+        """
+        Preps an item for insertion into the database.
+
+        Args:
+            item (Item): The item to be prepped for insertion.
+            base_url (str): The base URL used to create the item's self URL.
+            exist_ok (bool): Indicates whether the item can exist already.
+
+        Returns:
+            Item: The prepped item.
+
+        Raises:
+            ConflictError: If the item already exists in the database.
+
+        """
+        await self.check_collection_exists(collection_id=item["collection"])
+
+        return self.item_serializer.stac_to_db(item, base_url)
+
+    async def create_item(
+        self,
+        item: Item,
+        base_url: str = "",
+        exist_ok: bool = False,
+        refresh: bool = False,
+    ):
         """
         Asynchronously inserts a STAC item into MongoDB, ensuring the item does not already exist.
 
+        If exist_ok is True and the item already exists, it will update the existing item.
+
         Args:
             item (Item): The STAC item to be created.
+            base_url (str, optional): Base URL for STAC links. Defaults to "".
+            exist_ok (bool, optional): If True, update the item if it already exists. Defaults to False.
             refresh (bool, optional): Not used for MongoDB, kept for compatibility with Elasticsearch interface.
 
         Raises:
-            ConflictError: If the item with the same ID already exists within the collection
+            ConflictError: If the item with the same ID already exists within the collection and exist_ok is False
             NotFoundError: If the specified collection does not exist in MongoDB.
         """
         db = self.client[DATABASE]
         items_collection = db[ITEMS_INDEX]
-        collections_collection = db[COLLECTIONS_INDEX]
-
-        collection_exists = await collections_collection.count_documents(
-            {"id": item["collection"]}, limit=1
-        )
-        if not collection_exists:
-            raise NotFoundError(f"Collection {item['collection']} does not exist")
 
         new_item = item.copy()
-        new_item["_id"] = item.get("_id", ObjectId())
 
-        existing_item = await items_collection.find_one({"_id": new_item["_id"]})
-        if existing_item:
-            raise ConflictError(f"Item with _id {item['_id']} already exists")
+        # Log the creation attempt
+        logger.info(
+            f"Creating item {item['id']} in collection {item['collection']} with refresh={refresh}"
+        )
 
-        await items_collection.insert_one(new_item)
+        # Prepare the item for insertion
+        new_item = await self.async_prep_create_item(
+            item=new_item, base_url=base_url, exist_ok=exist_ok
+        )
+
+        # Check if an item with the same id and collection already exists
+        existing_item = await items_collection.find_one(
+            {"id": item["id"], "collection": item["collection"]}
+        )
+
+        if existing_item and not exist_ok:
+            raise ConflictError(
+                f"Item with id {item['id']} already exists in collection {item['collection']}"
+            )
+
+        # Set _id if not already present or preserve existing _id if updating
+        if existing_item and exist_ok:
+            # Preserve the MongoDB _id field when updating
+            new_item["_id"] = existing_item["_id"]
+            # Update the existing item
+            await items_collection.replace_one(
+                {"id": item["id"], "collection": item["collection"]}, new_item
+            )
+        else:
+            # Set a new _id for new items
+            if "_id" not in new_item:
+                new_item["_id"] = ObjectId()
+            # Insert the new item
+            await items_collection.insert_one(new_item)
 
         item = serialize_doc(item)
 
