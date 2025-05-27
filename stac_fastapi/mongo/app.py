@@ -36,7 +36,9 @@ session = Session.create_from_settings(settings)
 
 database_logic = DatabaseLogic()
 
-filter_extension = FilterExtension(client=EsAsyncBaseFiltersClient(database=database_logic))
+filter_extension = FilterExtension(
+    client=EsAsyncBaseFiltersClient(database=database_logic)
+)
 filter_extension.conformance_classes.append(
     "http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators"
 )
