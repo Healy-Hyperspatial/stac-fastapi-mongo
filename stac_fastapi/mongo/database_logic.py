@@ -88,19 +88,6 @@ async def create_item_index():
         logger.error("Failed to create MongoDB client")
 
 
-def mk_item_id(item_id: str, collection_id: str):
-    """Create the document id for an Item in Elasticsearch.
-
-    Args:
-        item_id (str): The id of the Item.
-        collection_id (str): The id of the Collection that the Item belongs to.
-
-    Returns:
-        str: The document id for the Item, combining the Item id and the Collection id, separated by a `|` character.
-    """
-    return f"{item_id}|{collection_id}"
-
-
 class Geometry(Protocol):  # noqa
     type: str
     coordinates: Any
@@ -670,11 +657,15 @@ class DatabaseLogic:
             item (Item): The STAC item to be created.
             base_url (str, optional): Base URL for STAC links. Defaults to "".
             exist_ok (bool, optional): If True, update the item if it already exists. Defaults to False.
-            refresh (bool, optional): Not used for MongoDB, kept for compatibility with Elasticsearch interface.
+            refresh (bool, optional): Not used for MongoDB, kept for compatibility with other backends.
 
         Raises:
             ConflictError: If the item with the same ID already exists within the collection and exist_ok is False
             NotFoundError: If the specified collection does not exist in MongoDB.
+            ConflictError: If there is an error creating or updating the item.
+
+        Returns:
+            dict: The created or updated item.
         """
         db = self.client[DATABASE]
         items_collection = db[ITEMS_INDEX]
@@ -686,37 +677,58 @@ class DatabaseLogic:
             f"Creating item {item['id']} in collection {item['collection']} with refresh={refresh}"
         )
 
-        # Prepare the item for insertion
-        new_item = await self.async_prep_create_item(
-            item=new_item, base_url=base_url, exist_ok=exist_ok
-        )
+        try:
+            # Prepare the item for insertion
+            new_item = await self.async_prep_create_item(
+                item=new_item, base_url=base_url, exist_ok=exist_ok
+            )
 
-        # Check if an item with the same id and collection already exists
-        existing_item = await items_collection.find_one(
-            {"id": item["id"], "collection": item["collection"]}
-        )
+            # Check if an item with the same id and collection already exists
+            existing_item = await items_collection.find_one(
+                {"id": item["id"], "collection": item["collection"]}
+            )
 
-        if existing_item and not exist_ok:
+            if existing_item and not exist_ok:
+                logger.warning(
+                    f"Item with id {item['id']} already exists in collection {item['collection']}"
+                )
+                raise ConflictError(
+                    f"Item with id {item['id']} already exists in collection {item['collection']}"
+                )
+
+            # Set _id if not already present or preserve existing _id if updating
+            if existing_item and exist_ok:
+                # Preserve the MongoDB _id field when updating
+                new_item["_id"] = existing_item["_id"]
+                # Update the existing item
+                logger.info(
+                    f"Updating existing item {item['id']} in collection {item['collection']}"
+                )
+                await items_collection.replace_one(
+                    {"id": item["id"], "collection": item["collection"]}, new_item
+                )
+            else:
+                # Set a new _id for new items
+                if "_id" not in new_item:
+                    new_item["_id"] = ObjectId()
+                # Insert the new item
+                logger.info(
+                    f"Inserting new item {item['id']} in collection {item['collection']}"
+                )
+                await items_collection.insert_one(new_item)
+
+            return serialize_doc(item)
+        except (ConflictError, NotFoundError):
+            # Re-raise these errors
+            raise
+        except PyMongoError as e:
+            # Handle any MongoDB errors
+            logger.error(
+                f"Error creating item {item['id']} in collection {item['collection']}: {e}"
+            )
             raise ConflictError(
-                f"Item with id {item['id']} already exists in collection {item['collection']}"
+                f"Error creating item {item['id']} in collection {item['collection']}: {e}"
             )
-
-        # Set _id if not already present or preserve existing _id if updating
-        if existing_item and exist_ok:
-            # Preserve the MongoDB _id field when updating
-            new_item["_id"] = existing_item["_id"]
-            # Update the existing item
-            await items_collection.replace_one(
-                {"id": item["id"], "collection": item["collection"]}, new_item
-            )
-        else:
-            # Set a new _id for new items
-            if "_id" not in new_item:
-                new_item["_id"] = ObjectId()
-            # Insert the new item
-            await items_collection.insert_one(new_item)
-
-        item = serialize_doc(item)
 
     async def prep_create_item(
         self, item: Item, base_url: str, exist_ok: bool = False
@@ -815,25 +827,40 @@ class DatabaseLogic:
         Args:
             item_id (str): The id of the Item to be deleted.
             collection_id (str): The id of the Collection that the Item belongs to.
-            refresh (bool, optional): Whether to refresh the index after the deletion. Default is False.
+            refresh (bool, optional): Not used for MongoDB, kept for compatibility with other backends.
 
         Raises:
             NotFoundError: If the Item does not exist in the database.
+            NotFoundError: If the Collection does not exist in the database.
+            ConflictError: If there is an error deleting the item.
         """
         db = self.client[DATABASE]
         items_collection = db[ITEMS_INDEX]
 
         try:
+            # First check if the collection exists
+            await self.check_collection_exists(collection_id)
+
             # Attempt to delete the item from the collection
             result = await items_collection.delete_one({"id": item_id})
             if result.deleted_count == 0:
                 # If no items were deleted, it means the item did not exist
+                logger.warning(
+                    f"Item {item_id} in collection {collection_id} not found"
+                )
                 raise NotFoundError(
                     f"Item {item_id} in collection {collection_id} not found"
                 )
+            logger.info(f"Deleted item {item_id} from collection {collection_id}")
+        except NotFoundError:
+            # Re-raise not found errors
+            raise
         except PyMongoError as e:
-            # Catch any MongoDB error and re-raise as NotFoundError for consistency with the original function's behavior
-            raise NotFoundError(
+            # Catch any MongoDB error and raise as ConflictError for consistency
+            logger.error(
+                f"Error deleting item {item_id} in collection {collection_id}: {e}"
+            )
+            raise ConflictError(
                 f"Error deleting item {item_id} in collection {collection_id}: {e}"
             )
 
