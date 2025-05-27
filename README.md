@@ -20,13 +20,14 @@ MongoDB backend for the [stac-fastapi](https://github.com/stac-utils/stac-fastap
 
 ## Technologies
 
-This project is built on the following technologies: STAC, stac-fastapi, FastAPI, MongoDB, Python
+This project is built on the following technologies: STAC, stac-fastapi, SFEOS core, FastAPI, MongoDB, Python
 
 <p align="left">
   <a href="https://stacspec.org/"><img src="https://raw.githubusercontent.com/stac-utils/stac-fastapi-elasticsearch-opensearch/refs/heads/main/assets/STAC-01.png" alt="STAC" height="100" hspace="10"></a>
   <a href="https://www.python.org/"><img src="https://raw.githubusercontent.com/stac-utils/stac-fastapi-elasticsearch-opensearch/refs/heads/main/assets/python.png" alt="Python" height="80" hspace="10"></a>
   <a href="https://fastapi.tiangolo.com/"><img src="https://raw.githubusercontent.com/stac-utils/stac-fastapi-elasticsearch-opensearch/refs/heads/main/assets/fastapi.svg" alt="FastAPI" height="80" hspace="10"></a>
   <a href="https://www.mongodb.com/"><img src="assets/mongodb.svg" alt="MongoDB" height="80" hspace="10"></a>
+  <a href="https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch"><img src="assets/sfeos-bw.png" alt="stac-fastapi-core" height="83" hspace="10"></a>
 </p>
 
 
