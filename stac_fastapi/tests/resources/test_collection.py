@@ -179,7 +179,24 @@ async def test_pagination_collection(app_client, ctx, txn_client):
         if not next_link:
             break  # No more pages
 
-        href = next_link["href"][len("http://test-server") :]
+        # Extract the path and query from the href
+        href = next_link["href"]
+        # If the href is a full URL, extract just the path and query
+        if href.startswith("http"):
+            from urllib.parse import urlparse, urlunparse
+
+            parsed_href = urlparse(href)
+            href = urlunparse(
+                (
+                    "",
+                    "",
+                    parsed_href.path,
+                    parsed_href.params,
+                    parsed_href.query,
+                    parsed_href.fragment,
+                )
+            )
+
         page = await app_client.get(href)
 
     # Confirm we have paginated through all collections

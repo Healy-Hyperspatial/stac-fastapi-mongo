@@ -6,13 +6,13 @@ with open("README.md") as f:
     desc = f.read()
 
 install_requires = [
-    "stac-fastapi.core==3.0.0a0",
-    "motor==3.3.2",
-    "pymongo==4.6.2",
+    "stac-fastapi-core==4.1.0",
+    "motor~=3.3.2",
+    "pymongo~=4.6.2",
     "uvicorn",
     "starlette",
-    "typing_extensions==4.8.0",
-    "stac_pydantic==3.0.0",
+    "typing_extensions~=4.8.0",
+    "stac_pydantic>=3.0.0",
 ]
 
 extra_reqs = {
@@ -30,8 +30,8 @@ extra_reqs = {
 }
 
 setup(
-    name="stac-fastapi.mongo",
-    version="3.2.1",
+    name="stac-fastapi-mongo",
+    version="4.0.0",
     description="Mongodb stac-fastapi backend.",
     long_description=desc,
     long_description_content_type="text/markdown",
