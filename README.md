@@ -18,6 +18,19 @@ MongoDB backend for the [stac-fastapi](https://github.com/stac-utils/stac-fastap
 
 <!-- [![Join the chat at https://gitter.im/stac-fastapi-mongo/community](https://badges.gitter.im/stac-fastapi-mongo/community.svg)](https://gitter.im/stac-fastapi-mongo/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) -->
 
+## Technologies
+
+This project is built on the following technologies: STAC, stac-fastapi, SFEOS core, FastAPI, MongoDB, Python
+
+<p align="left">
+  <a href="https://stacspec.org/"><img src="https://raw.githubusercontent.com/stac-utils/stac-fastapi-elasticsearch-opensearch/refs/heads/main/assets/STAC-01.png" alt="STAC" height="100" hspace="10"></a>
+  <a href="https://www.python.org/"><img src="https://raw.githubusercontent.com/stac-utils/stac-fastapi-elasticsearch-opensearch/refs/heads/main/assets/python.png" alt="Python" height="80" hspace="10"></a>
+  <a href="https://fastapi.tiangolo.com/"><img src="https://raw.githubusercontent.com/stac-utils/stac-fastapi-elasticsearch-opensearch/refs/heads/main/assets/fastapi.svg" alt="FastAPI" height="80" hspace="10"></a>
+  <a href="https://www.mongodb.com/"><img src="assets/mongodb.svg" alt="MongoDB" height="80" hspace="10"></a>
+  <a href="https://github.com/stac-utils/stac-fastapi-elasticsearch-opensearch"><img src="assets/sfeos-bw.png" alt="stac-fastapi-core" height="83" hspace="10"></a>
+</p>
+
+
 ## Table of Contents
 
 - [Installation](#installation)
@@ -32,9 +45,11 @@ MongoDB backend for the [stac-fastapi](https://github.com/stac-utils/stac-fastap
 - [Sample Data](#sample-data)
 - [Authentication](#authentication)
   - [Environment Variable Configuration](#environment-variable-configuration)
-  - [User Permissions Configuration](#user-permissions-configuration)
-  - [Public Endpoints Configuration](#public-endpoints-configuration)
-  - [Authentication Configurations](#authentication-configurations)
+  - [Authentication Configuration](#authentication-configuration)
+  - [Examples](#examples)
+    - [Admin-only Authentication](#admin-only-authentication)
+    - [Public Endpoints with Admin Authentication](#public-endpoints-with-admin-authentication)
+    - [Multi-user Authentication](#multi-user-authentication)
 - [Read-Only Databases](#note-for-read-only-databases)
 - [Contributing](#contributing)
 - [Changelog](#changelog)
@@ -128,79 +143,153 @@ make ingest
 
 ### Environment Variable Configuration
 
-Basic authentication is an optional feature. You can enable it by setting the environment variable `BASIC_AUTH` as a JSON string.
+Basic authentication is an optional feature. You can enable it by setting the environment variable `STAC_FASTAPI_ROUTE_DEPENDENCIES` as a JSON string.
 
 Example:
 ```
-BASIC_AUTH={"users":[{"username":"user","password":"pass","permissions":"*"}]}
+STAC_FASTAPI_ROUTE_DEPENDENCIES=[{"routes":[{"method":"*","path":"*"}],"dependencies":[{"method":"stac_fastapi.core.models.basic_auth.BasicAuth","kwargs":{"credentials":[{"username":"admin","password":"admin"}]}}]}]
 ```
 
-### User Permissions Configuration
+### Authentication Configuration
 
-In order to set endpoints with specific access permissions, you can configure the `users` key with a list of user objects. Each user object should contain the username, password, and their respective permissions.
+The `STAC_FASTAPI_ROUTE_DEPENDENCIES` environment variable allows you to configure different levels of authentication for different routes. The configuration is a JSON array of objects, each with two properties:
 
-Example: This example illustrates the configuration for two users: an **admin** user with full permissions (*) and a **reader** user with limited permissions to specific read-only endpoints.
+1. `routes`: An array of route objects, each with `method` and `path` properties
+2. `dependencies`: An array of dependency objects, each with `method` and `kwargs` properties
+
+#### Examples
+
+##### Admin-only Authentication
+
+This example configures all routes to require admin authentication:
+
 ```json
-{
-    "users": [
-        {
-            "username": "admin",
-            "password": "admin",
-            "permissions": "*"
-        },
-        {
-            "username": "reader",
-            "password": "reader",
-            "permissions": [
-                {"path": "/", "method": ["GET"]},
-                {"path": "/conformance", "method": ["GET"]},
-                {"path": "/collections/{collection_id}/items/{item_id}", "method": ["GET"]},
-                {"path": "/search", "method": ["GET", "POST"]},
-                {"path": "/collections", "method": ["GET"]},
-                {"path": "/collections/{collection_id}", "method": ["GET"]},
-                {"path": "/collections/{collection_id}/items", "method": ["GET"]},
-                {"path": "/queryables", "method": ["GET"]},
-                {"path": "/queryables/collections/{collection_id}/queryables", "method": ["GET"]},
-                {"path": "/_mgmt/ping", "method": ["GET"]}
-            ]
-        }
-    ]
-}
+[
+    {
+        "routes": [
+            {
+                "method": "*",
+                "path": "*"
+            }
+        ],
+        "dependencies": [
+            {
+                "method": "stac_fastapi.core.models.basic_auth.BasicAuth",
+                "kwargs": {
+                    "credentials": [
+                        {
+                            "username": "admin",
+                            "password": "admin"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]
 ```
 
-### Public Endpoints Configuration
+##### Public Endpoints with Admin Authentication
 
-In order to set endpoints with public access, you can configure the public_endpoints key with a list of endpoint objects. Each endpoint object should specify the path and method of the endpoint.
+This example makes specific endpoints public while requiring admin authentication for all others:
 
-Example: This example demonstrates the configuration for public endpoints, allowing access without authentication to read-only endpoints.
 ```json
-{
-    "public_endpoints": [
-        {"path": "/", "method": "GET"},
-        {"path": "/conformance", "method": "GET"},
-        {"path": "/collections/{collection_id}/items/{item_id}", "method": "GET"},
-        {"path": "/search", "method": "GET"},
-        {"path": "/search", "method": "POST"},
-        {"path": "/collections", "method": "GET"},
-        {"path": "/collections/{collection_id}", "method": "GET"},
-        {"path": "/collections/{collection_id}/items", "method": "GET"},
-        {"path": "/queryables", "method": "GET"},
-        {"path": "/queryables/collections/{collection_id}/queryables", "method": "GET"},
-        {"path": "/_mgmt/ping", "method": "GET"}
-    ],
-    "users": [
-        {
-            "username": "admin",
-            "password": "admin",
-            "permissions": "*"
-        }
-    ]
-}
+[
+    {
+        "routes": [
+            {
+                "method": "*",
+                "path": "*"
+            }
+        ],
+        "dependencies": [
+            {
+                "method": "stac_fastapi.core.models.basic_auth.BasicAuth",
+                "kwargs": {
+                    "credentials": [
+                        {
+                            "username": "admin",
+                            "password": "admin"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "routes": [
+            {"path": "/", "method": ["GET"]},
+            {"path": "/conformance", "method": ["GET"]},
+            {"path": "/collections/{collection_id}/items/{item_id}", "method": ["GET"]},
+            {"path": "/search", "method": ["GET", "POST"]},
+            {"path": "/collections", "method": ["GET"]},
+            {"path": "/collections/{collection_id}", "method": ["GET"]},
+            {"path": "/collections/{collection_id}/items", "method": ["GET"]},
+            {"path": "/queryables", "method": ["GET"]},
+            {"path": "/queryables/collections/{collection_id}/queryables", "method": ["GET"]},
+            {"path": "/_mgmt/ping", "method": ["GET"]}
+        ],
+        "dependencies": []
+    }
+]
 ```
 
-### Authentication Configurations
+##### Multi-user Authentication
 
-See `docker-compose.basic_auth_protected.yml` and `docker-compose.basic_auth_public.yml` for basic authentication configurations.
+This example configures admin authentication for all routes, with a separate reader user that can access specific read-only endpoints:
+
+```json
+[
+    {
+        "routes": [
+            {
+                "method": "*",
+                "path": "*"
+            }
+        ],
+        "dependencies": [
+            {
+                "method": "stac_fastapi.core.models.basic_auth.BasicAuth",
+                "kwargs": {
+                    "credentials": [
+                        {
+                            "username": "admin",
+                            "password": "admin"
+                        }
+                    ]
+                }
+            }
+        ]
+    },
+    {
+        "routes": [
+            {"path": "/", "method": ["GET"]},
+            {"path": "/conformance", "method": ["GET"]},
+            {"path": "/collections/{collection_id}/items/{item_id}", "method": ["GET"]},
+            {"path": "/search", "method": ["GET", "POST"]},
+            {"path": "/collections", "method": ["GET"]},
+            {"path": "/collections/{collection_id}", "method": ["GET"]},
+            {"path": "/collections/{collection_id}/items", "method": ["GET"]},
+            {"path": "/queryables", "method": ["GET"]},
+            {"path": "/queryables/collections/{collection_id}/queryables", "method": ["GET"]},
+            {"path": "/_mgmt/ping", "method": ["GET"]}
+        ],
+        "dependencies": [
+            {
+                "method": "stac_fastapi.core.models.basic_auth.BasicAuth",
+                "kwargs": {
+                    "credentials": [
+                        {
+                            "username": "reader",
+                            "password": "reader"
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+]
+```
 
 ## Note for Read-Only Databases
 

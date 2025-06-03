@@ -7,12 +7,20 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ## [Unreleased]
 
+## [v4.0.0]
+
+### Added
+
+- Logging to database logic. [#36](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/36)
+
 ### Changed
 
 - Add support for python 3.12. [#22](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/22)
 - Updated sfeos core to v3.0.0a0, fixed datetime functionality. [#23](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/23)
+- Updated stac-fastapi.core to v4.1.0. [#36](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/36)
 - Create indexes in MongoDB at startup only if environment variable MONGO_CREATE_INDEXES is set to "true" (default when the env variable is not set: "true"). [#31](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/31)
 - Improved README with table of contents, better formatting, and added Contributing section. [#34](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/34)
+- Updated authentication to use STAC_FASTAPI_ROUTE_DEPENDENCIES environment variable instead of BASIC_AUTH. [#36](https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/pull/36)
 
 ### Fixed
 
@@ -76,7 +84,8 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0/
 
 ----
 
-[Unreleased]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.2.1...main>
+[Unreleased]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v4.0.0...main>
+[v4.0.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.2.1...v4.0.0>
 [v3.2.1]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.2.0...v3.2.1>
 [v3.2.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.1.0...v3.2.0>
 [v3.1.0]: <https://github.com/Healy-Hyperspatial/stac-fastapi-mongo/compare/v3.0.1...v3.1.0>

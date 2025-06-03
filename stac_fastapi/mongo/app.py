@@ -1,19 +1,19 @@
 """FastAPI application."""
 
+import logging
 import os
 
 from stac_fastapi.api.app import StacApi
 from stac_fastapi.api.models import create_get_request_model, create_post_request_model
-from stac_fastapi.core.basic_auth import apply_basic_auth
-from stac_fastapi.core.core import (  # BulkTransactionsClient,
+from stac_fastapi.core.core import (
     CoreClient,
     EsAsyncBaseFiltersClient,
     TransactionsClient,
 )
 from stac_fastapi.core.extensions import QueryExtension
+from stac_fastapi.core.route_dependencies import get_route_dependencies
 from stac_fastapi.core.session import Session
 from stac_fastapi.extensions.core import (
-    ContextExtension,
     FieldsExtension,
     FilterExtension,
     SortExtension,
@@ -29,15 +29,19 @@ from stac_fastapi.mongo.database_logic import (
     create_item_index,
 )
 
+logger = logging.getLogger(__name__)
+
 settings = AsyncMongoDBSettings()
 session = Session.create_from_settings(settings)
 
-filter_extension = FilterExtension(client=EsAsyncBaseFiltersClient())
+database_logic = DatabaseLogic()
+
+filter_extension = FilterExtension(
+    client=EsAsyncBaseFiltersClient(database=database_logic)
+)
 filter_extension.conformance_classes.append(
     "http://www.opengis.net/spec/cql2/1.0/conf/advanced-comparison-operators"
 )
-
-database_logic = DatabaseLogic()
 
 extensions = [
     TransactionExtension(
@@ -57,7 +61,6 @@ extensions = [
     QueryExtension(),
     SortExtension(),
     TokenPaginationExtension(),
-    ContextExtension(),
     filter_extension,
 ]
 
@@ -67,14 +70,16 @@ api = StacApi(
     settings=settings,
     extensions=extensions,
     client=CoreClient(
-        database=database_logic, session=session, post_request_model=post_request_model
+        database=database_logic,
+        session=session,
+        post_request_model=post_request_model,
+        landing_page_id=os.getenv("STAC_FASTAPI_LANDING_PAGE_ID", "stac-fastapi"),
     ),
     search_get_request_model=create_get_request_model(extensions),
     search_post_request_model=post_request_model,
+    route_dependencies=get_route_dependencies(),
 )
 app = api.app
-
-apply_basic_auth(api)
 
 
 @app.on_event("startup")
@@ -91,8 +96,8 @@ def run() -> None:
     try:
         import uvicorn
 
-        print("host: ", settings.app_host)
-        print("port: ", settings.app_port)
+        logger.info("host: %s", settings.app_host)
+        logger.info("port: %s", settings.app_port)
         uvicorn.run(
             "stac_fastapi.mongo.app:app",
             host=settings.app_host,
